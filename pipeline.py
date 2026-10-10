@@ -238,9 +238,10 @@ class _TrellisBackend:
             outputs = self._pipe.run(
                 image,
                 seed=opts.seed,
+                sparse_structure_sampler_params={"steps": opts.num_inference_steps},
+                slat_sampler_params={"steps": opts.num_inference_steps},
                 formats=["mesh"],
                 preprocess_image=False,
-                num_inference_steps=opts.num_inference_steps,
             )
         if progress:
             progress(0.75, "extracting mesh")
