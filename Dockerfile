@@ -31,18 +31,24 @@ RUN pip install -r requirements.txt
 
 # --- TRELLIS (no PyPI release — source checkout, made importable via PYTHONPATH) ---
 # Comment out if you only use the Hunyuan3D backend.
-# Runtime deps for TrellisImageTo3DPipeline. Attention runs on xformers
-# (ATTN_BACKEND) so no flash-attn source build is needed. Versions are pinned
-# to the numpy-1.x / torch-2.3 era: newer releases demand numpy>=2 which
-# breaks torch 2.3.
+# Installs the FULL official --basic dependency set from TRELLIS's setup.sh
+# (no more hand-guessing deps one failure at a time). Attention runs on
+# xformers (ATTN_BACKEND) so no flash-attn source build is needed. Versions are
+# pinned to the numpy-1.x / torch-2.3 era: newer releases demand numpy>=2
+# which breaks torch 2.3.
 ENV ATTN_BACKEND=xformers \
     PYTHONPATH=/opt/TRELLIS
 RUN git clone --depth 1 --recursive https://github.com/microsoft/TRELLIS.git /opt/TRELLIS \
  && pip install spconv-cu121 "timm==0.9.16" "transformers==4.46.3" \
       "huggingface_hub==0.26.5" "open3d==0.18.0" "plyfile==1.1.2" \
-      easydict "opencv-python-headless==4.10.0.84" \
+      easydict "opencv-python-headless==4.10.0.84" ninja imageio imageio-ffmpeg \
+      xatlas pyvista pymeshfix igraph \
       "git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8" \
- && pip install kaolin -f https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.3.1_cu121.html
+ && pip install kaolin -f https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.3.1_cu121.html \
+ && python -c "from trellis.pipelines import TrellisImageTo3DPipeline; \
+               import trellis.models.structured_latent_vae.decoder_mesh; \
+               from trellis.representations.mesh import flexicubes; \
+               print('TRELLIS import chain OK')"
 
 # --- app code ---
 COPY app.py pipeline.py batch.py lowvram_patch.py ./
