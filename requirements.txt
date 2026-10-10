@@ -19,6 +19,10 @@ scipy==1.14.1
 einops==0.8.0
 xformers==0.0.27  # must match torch 2.3.x
 
+# Sprite pipeline (text -> transparent PNG): SDXL-Turbo via diffusers
+diffusers==0.31.0
+accelerate==0.33.0
+
 # Hunyuan3D backend (optional — needed only when PLUSHY_BACKEND=hunyuan3d)
 # Installs the hy3dgen package from source:
 #   git clone https://github.com/Tencent/Hunyuan3D-2.git /opt/Hunyuan3D-2

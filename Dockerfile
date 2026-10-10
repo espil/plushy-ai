@@ -51,7 +51,7 @@ RUN git clone --depth 1 --recursive https://github.com/microsoft/TRELLIS.git /op
                print('TRELLIS import chain OK')"
 
 # --- app code ---
-COPY app.py pipeline.py batch.py lowvram_patch.py ./
+COPY app.py pipeline_3d.py pipeline_sprite.py batch.py sprites.py lowvram_patch.py citygen.py ./
 COPY static/ ./static/
 RUN mkdir -p uploads outputs
 

@@ -40,7 +40,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-from pipeline import (GenerationOptions, PlushyPipeline, apply_quality_preset,
+from pipeline_3d import (GenerationOptions, PlushyPipeline, apply_quality_preset,
                       get_pipeline)
 
 # Opt-in low-VRAM mode for 8GB GPUs (RTX 4060): no-op unless PLUSHY_LOWVRAM=1.
@@ -83,6 +83,10 @@ class JobStatus(str, Enum):
 @dataclass
 class Job:
     job_id: str
+    kind: str = "3d"  # "3d" | "sprite"
+    prompt: Optional[str] = None  # sprite jobs
+    sprite_size: int = 512
+    sprite_steps: int = 4
     batch_id: Optional[str] = None
     status: JobStatus = JobStatus.QUEUED
     progress: float = 0.0
@@ -103,6 +107,7 @@ job_queue: asyncio.Queue[str] = asyncio.Queue()
 batches: dict[str, dict] = {}  # batch_id -> {batch_id, job_ids, created_at, zip_path}
 _workers: list[asyncio.Task] = []
 _pipeline: Optional[PlushyPipeline] = None
+_sprite_pipeline = None
 
 
 # ---------------------------------------------------------------------------
@@ -275,15 +280,37 @@ async def _worker(worker_id: int):
             job.message = msg
 
         try:
-            result = await _pipeline.generate(
-                job.image_path, job.options, job_id=job_id, progress=_progress)
-            job.result_path = result.glb_path
-            job.vertex_count = result.vertex_count
-            job.face_count = result.face_count
-            job.status = JobStatus.COMPLETED
-            job.progress = 1.0
-            job.message = f"done in {result.elapsed_sec:.1f}s"
-            log.info("job %s completed → %s", job_id, result.glb_path)
+            if job.kind == "sprite":
+                from pipeline_sprite import SpritePipeline, SpriteOptions
+                global _sprite_pipeline
+                if _sprite_pipeline is None:
+                    _sprite_pipeline = SpritePipeline()
+                sopts = SpriteOptions(
+                    width=job.sprite_size, height=job.sprite_size,
+                    seed=job.options.seed,
+                    num_inference_steps=job.sprite_steps,
+                )
+                dest = OUTPUT_DIR / f"{job_id}.sprite.png"
+                t0 = time.time()
+                loop = asyncio.get_running_loop()
+                await loop.run_in_executor(
+                    None, _sprite_pipeline.generate_to_file,
+                    job.prompt, dest, sopts, _progress)
+                job.result_path = dest
+                job.status = JobStatus.COMPLETED
+                job.progress = 1.0
+                job.message = f"done in {time.time() - t0:.1f}s"
+                log.info("sprite job %s completed → %s", job_id, dest)
+            else:
+                result = await _pipeline.generate(
+                    job.image_path, job.options, job_id=job_id, progress=_progress)
+                job.result_path = result.glb_path
+                job.vertex_count = result.vertex_count
+                job.face_count = result.face_count
+                job.status = JobStatus.COMPLETED
+                job.progress = 1.0
+                job.message = f"done in {result.elapsed_sec:.1f}s"
+                log.info("job %s completed → %s", job_id, result.glb_path)
         except asyncio.CancelledError:
             job.status = JobStatus.CANCELLED
             job.message = "cancelled"
@@ -410,6 +437,36 @@ async def generate(
         message=f"job queued at position {job_queue.qsize()}",
     )
 
+
+class SpriteRequest(BaseModel):
+    prompt: str = Field(description="what to generate, e.g. 'a pine tree'")
+    seed: int = 0
+    size: int = Field(512, description="square size in px")
+    steps: int = Field(4, description="inference steps (SDXL-Turbo: 1-4)")
+
+
+@app.post("/api/sprite", status_code=202, response_model=GenerateResponse)
+async def sprite(req: SpriteRequest):
+    """Enqueue a text→sprite job (transparent PNG). Returns 202 + job_id."""
+    prompt = (req.prompt or "").strip()
+    if not prompt:
+        raise HTTPException(400, "prompt is required")
+    if len(prompt) > 500:
+        raise HTTPException(400, "prompt too long (max 500 chars)")
+    size = max(64, min(req.size, 1024))
+    job_id = uuid.uuid4().hex[:12]
+    opts = GenerationOptions(seed=req.seed)
+    jobs[job_id] = Job(job_id=job_id, kind="sprite", prompt=prompt,
+                       sprite_size=size, sprite_steps=max(1, min(req.steps, 12)),
+                       options=opts)
+    await job_queue.put(job_id)
+    log.info("enqueued sprite job %s (queue depth %d)", job_id, job_queue.qsize())
+    return GenerateResponse(
+        job_id=job_id,
+        status=JobStatus.QUEUED,
+        poll_url=f"/api/status/{job_id}",
+        message=f"sprite job queued at position {job_queue.qsize()}",
+    )
 
 @app.post("/api/batch", status_code=202, response_model=BatchEnqueueResponse)
 async def batch_generate(
@@ -546,6 +603,12 @@ async def result(job_id: str):
         raise HTTPException(409, f"job not ready (status={job.status.value})")
     if not job.result_path.exists():
         raise HTTPException(410, "result file expired")
+    if job.kind == "sprite":
+        return FileResponse(
+            job.result_path,
+            media_type="image/png",
+            filename=f"plushy-sprite-{job_id}.png",
+        )
     return FileResponse(
         job.result_path,
         media_type="model/gltf-binary",
@@ -585,6 +648,7 @@ async def index():
         "name": "Plushy AI",
         "studio": "/studio",
         "docs": "/docs",
-        "generate": "POST /api/generate (multipart: image | image_url)",
+        "generate": "POST /api/generate (multipart: image | image_url) -> 3D GLB",
+        "sprite": "POST /api/sprite (JSON: prompt, seed, size, steps) -> transparent PNG",
         "batch": "POST /api/batch (multipart: images[] — up to 100)",
     }

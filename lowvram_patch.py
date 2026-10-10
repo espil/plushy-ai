@@ -29,7 +29,7 @@ import gc
 import logging
 import os
 
-import pipeline as _p
+import pipeline_3d as _p
 
 log = logging.getLogger("plushy.lowvram")
 

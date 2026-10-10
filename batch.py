@@ -65,7 +65,7 @@ def main() -> int:
         os.environ["PLUSHY_MOCK"] = "1"
 
     # Import AFTER env is set (pipeline reads PLUSHY_MOCK at import time)
-    from pipeline import (GenerationOptions, apply_quality_preset,
+    from pipeline_3d import (GenerationOptions, apply_quality_preset,
                           get_pipeline)
 
     # Opt-in low-VRAM mode for 8GB GPUs: no-op unless PLUSHY_LOWVRAM=1
@@ -77,7 +77,7 @@ def main() -> int:
         print(f"lowvram patch skipped: {e}")
 
     # Resolve quality preset -> knobs (explicit flags win over preset)
-    from pipeline import QUALITY_PRESETS
+    from pipeline_3d import QUALITY_PRESETS
     preset = QUALITY_PRESETS.get((args.quality or "balanced").lower(),
                                  QUALITY_PRESETS["balanced"])
     steps = args.steps if args.steps is not None else preset["num_inference_steps"]
