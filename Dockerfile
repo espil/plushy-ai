@@ -29,10 +29,19 @@ RUN pip install --upgrade pip setuptools wheel \
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# --- TRELLIS (no PyPI release — install from source) ---
+# --- TRELLIS (no PyPI release — source checkout, made importable via PYTHONPATH) ---
 # Comment out if you only use the Hunyuan3D backend.
+# Runtime deps for TrellisImageTo3DPipeline. Attention runs on xformers
+# (ATTN_BACKEND) so no flash-attn source build is needed. Versions are pinned
+# to the numpy-1.x / torch-2.3 era: newer releases demand numpy>=2 which
+# breaks torch 2.3.
+ENV ATTN_BACKEND=xformers \
+    PYTHONPATH=/opt/TRELLIS
 RUN git clone --depth 1 https://github.com/microsoft/TRELLIS.git /opt/TRELLIS \
- && pip install -e /opt/TRELLIS
+ && pip install spconv-cu121 "timm==0.9.16" "transformers==4.46.3" \
+      "huggingface_hub==0.26.5" "open3d==0.18.0" "plyfile==1.1.2" \
+      easydict "opencv-python-headless==4.10.0.84" \
+      "git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8"
 
 # --- app code ---
 COPY app.py pipeline.py ./

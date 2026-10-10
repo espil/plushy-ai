@@ -231,7 +231,6 @@ class _TrellisBackend:
                  progress: Optional[ProgressCallback] = None):
         self.load()
         import torch
-        from trellis.utils import postprocessing_utils
 
         if progress:
             progress(0.15, "running TRELLIS diffusion")
