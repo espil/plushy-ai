@@ -44,7 +44,8 @@ RUN git clone --depth 1 https://github.com/microsoft/TRELLIS.git /opt/TRELLIS \
       "git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8"
 
 # --- app code ---
-COPY app.py pipeline.py ./
+COPY app.py pipeline.py batch.py lowvram_patch.py ./
+COPY static/ ./static/
 RUN mkdir -p uploads outputs
 
 # Model weights download at runtime (first request warms them up).
