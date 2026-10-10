@@ -12,7 +12,7 @@ tqdm==4.67.1  # batch.py progress bar (optional at runtime)
 pillow==11.1.0
 numpy==1.26.4
 trimesh==4.5.0
-fast-simplification==0.1.10  # trimesh quadric decimation backend
+fast-simplification==0.1.7  # trimesh quadric decimation backend (0.1.8+ needs numpy>=2, torch 2.3 needs numpy 1.x)
 rembg==2.0.57
 onnxruntime-gpu==1.20.2
 scipy==1.14.1
