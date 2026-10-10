@@ -41,7 +41,8 @@ RUN git clone --depth 1 --recursive https://github.com/microsoft/TRELLIS.git /op
  && pip install spconv-cu121 "timm==0.9.16" "transformers==4.46.3" \
       "huggingface_hub==0.26.5" "open3d==0.18.0" "plyfile==1.1.2" \
       easydict "opencv-python-headless==4.10.0.84" \
-      "git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8"
+      "git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8" \
+ && pip install kaolin -f https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.3.1_cu121.html
 
 # --- app code ---
 COPY app.py pipeline.py batch.py lowvram_patch.py ./
