@@ -1,19 +1,24 @@
 # 🧸 Plushy AI — local, private Meshy alternative
 
-Image → 3D (.GLB) generation pipeline using open-weight foundation models.
-No cloud, no per-generation fees, your GPU.
+Two pipelines, one project. No cloud, no per-generation fees, your GPU.
 
 ```
-image.png ──▶ POST /api/generate ──▶ queue ──▶ TRELLIS / Hunyuan3D ──▶ model.glb
+image.png ──▶ POST /api/generate ──▶ queue ──▶ TRELLIS / Hunyuan3D ──▶ model.glb   (3D)
+"a pine tree" ──▶ POST /api/sprite ──▶ queue ──▶ SDXL-Turbo + rembg ──▶ sprite.png  (2D sprite)
 ```
+
+- **3D** (`pipeline_3d.py`): image → 3D GLB for characters and hero assets.
+- **Sprites** (`pipeline_sprite.py`): text → transparent PNG, ready as billboard
+  sprites in a game engine. Seconds per sprite, a fraction of the VRAM.
 
 ## Architecture
 
 | Piece | File | Notes |
 |---|---|---|
-| API + async queue | `app.py` | FastAPI, `POST /api/generate` returns `202 + job_id` immediately; background workers (default 1, one GPU) run inference in a thread executor so the event loop never blocks |
-| Generation pipeline | `pipeline.py` | Image preprocess (rembg → square pad → 512px) → backend diffusion → mesh cleanup (de-dupe, de-float, decimate, normalize) → standard `.GLB` via trimesh |
-| GPU environment | `Dockerfile` | CUDA 12.1, torch 2.3, TRELLIS from source |
+| API + async queue | `app.py` | FastAPI; `POST /api/generate` and `POST /api/sprite` return `202 + job_id` immediately; background workers (default 1, one GPU) run inference in a thread executor so the event loop never blocks |
+| 3D pipeline | `pipeline_3d.py` | Image preprocess (rembg → square pad → 512px) → backend diffusion → mesh cleanup (de-dupe, de-float, decimate, normalize) → standard `.GLB` via trimesh |
+| Sprite pipeline | `pipeline_sprite.py` | SDXL-Turbo text-to-image → rembg background removal → transparent `.PNG` |
+| GPU environment | `Dockerfile` | CUDA 12.1, torch 2.3, TRELLIS from source, diffusers for sprites |
 
 ### Endpoints
 
@@ -26,7 +31,23 @@ image.png ──▶ POST /api/generate ──▶ queue ──▶ TRELLIS / Hunyu
 | `GET` | `/api/batch/{batch_id}` | aggregate counts + per-job statuses |
 | `GET` | `/api/batch/{batch_id}/download` | all completed GLBs as one `.zip` |
 | `DELETE` | `/api/job/{job_id}` | cancel + delete |
+| `POST` | `/api/sprite` | JSON `prompt`, `seed`, `size`, `steps` → `202 { job_id, poll_url }`; result is a transparent `.PNG` (`image/png`) |
 | `GET` | `/health` | liveness, backend, queue depth |
+
+## Sprite mode — text → transparent PNG
+
+For billboard sprites (trees, props, street furniture). Much faster and
+lighter than 3D — seconds per sprite on an 8GB GPU.
+
+```bash
+# single sprite
+python sprites.py --prompt "a pine tree" --output ./my_sprites
+
+# batch from a prompts file (one per line, # = comment)
+python sprites.py --prompts prompts.txt --output ./my_sprites --seeds 3 --size 256
+```
+
+Or via the API / studio GUI (`/studio` → Sprite tab).
 
 ## Batch mode — many images → many GLBs
 
