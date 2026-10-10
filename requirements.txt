@@ -1,0 +1,25 @@
+# Plushy AI dependencies
+# torch/torchvision are installed separately in the Dockerfile (CUDA 12.1 build)
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic==2.10.4
+httpx==0.28.1
+aiofiles==24.1.0
+tqdm==4.67.1  # batch.py progress bar (optional at runtime)
+
+pillow==11.1.0
+numpy==1.26.4
+trimesh==4.5.0
+fast-simplification==0.1.10  # trimesh quadric decimation backend
+rembg==2.0.57
+onnxruntime-gpu==1.20.1
+scipy==1.14.1
+einops==0.8.0
+xformers==0.0.27  # must match torch 2.3.x
+
+# Hunyuan3D backend (optional — needed only when PLUSHY_BACKEND=hunyuan3d)
+# Installs the hy3dgen package from source:
+#   git clone https://github.com/Tencent/Hunyuan3D-2.git /opt/Hunyuan3D-2
+#   pip install -e /opt/Hunyuan3D-2

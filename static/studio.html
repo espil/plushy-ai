@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plushy AI Studio</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, -apple-system, sans-serif; max-width: 860px;
+         margin: 2rem auto; padding: 0 1.2rem; background: #141414; color: #eee; }
+  h1 { font-size: 1.6rem; }
+  h1 small { color: #888; font-weight: normal; font-size: 0.9rem; }
+  .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px;
+          padding: 1.2rem; margin-bottom: 1rem; }
+  #drop { border: 2px dashed #555; border-radius: 12px; padding: 2.2rem 1rem;
+          text-align: center; color: #aaa; cursor: pointer; margin-bottom: 1rem; }
+  #drop.over { border-color: #7ab; background: #1a2530; color: #cde; }
+  #drop img { max-width: 220px; max-height: 220px; border-radius: 8px; margin-top: .6rem; }
+  .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+  label { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: #aaa; }
+  select, input[type=number] { background: #222; color: #eee; border: 1px solid #444;
+          border-radius: 8px; padding: .5rem .7rem; font-size: 1rem; }
+  button { background: #3a7bd5; color: #fff; border: none; border-radius: 8px;
+          padding: .7rem 1.6rem; font-size: 1rem; cursor: pointer; }
+  button:disabled { background: #444; cursor: wait; }
+  #progress { height: 10px; background: #222; border-radius: 6px; overflow: hidden; margin: .8rem 0 .3rem; display: none; }
+  #bar { height: 100%; width: 0%; background: #3a7bd5; transition: width .3s; }
+  #status { color: #aaa; font-size: .9rem; min-height: 1.4em; }
+  #error { color: #f66; font-size: .9rem; white-space: pre-wrap; }
+  #viewer { width: 100%; height: 420px; border-radius: 12px; background: #0a0a0a;
+            display: none; margin-top: .6rem; }
+  #actions { margin-top: .8rem; display: none; gap: .8rem; }
+  #actions a { background: #2a2a2a; color: #eee; padding: .6rem 1.2rem;
+          border-radius: 8px; text-decoration: none; border: 1px solid #444; }
+  .note { color: #777; font-size: .8rem; margin-top: 1rem; }
+</style>
+</head>
+<body>
+<h1>🧸 Plushy AI Studio <small>image → 3D</small></h1>
+
+<div class="card">
+  <div id="drop">Drop an image here, or click to choose one
+    <div><img id="preview" alt="" style="display:none"></div>
+  </div>
+  <input type="file" id="file" accept="image/*" style="display:none">
+  <div class="row">
+    <label>Quality
+      <select id="quality">
+        <option value="balanced" selected>balanced (default)</option>
+        <option value="draft">draft (fast)</option>
+        <option value="detailed">detailed (slow, more VRAM)</option>
+      </select>
+    </label>
+    <label>Seed
+      <input type="number" id="seed" value="0" min="0" style="width:6rem">
+    </label>
+    <button id="go">Generate 3D</button>
+  </div>
+  <div id="progress"><div id="bar"></div></div>
+  <div id="status"></div>
+  <div id="error"></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Result</h3>
+  <canvas id="viewer"></canvas>
+  <div id="actions">
+    <a id="dl" href="#" download>Download .GLB</a>
+  </div>
+  <div class="note" id="vnote" style="display:none"></div>
+</div>
+
+<div class="note">Mock mode = placeholder geometry (no GPU here). Real TRELLIS
+generation happens in Docker on your RTX 4060 — see GPU_RUNBOOK.md.</div>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('file');
+const preview = document.getElementById('preview');
+const go = document.getElementById('go');
+const bar = document.getElementById('bar');
+const progress = document.getElementById('progress');
+const statusEl = document.getElementById('status');
+const errorEl = document.getElementById('error');
+const viewer = document.getElementById('viewer');
+const actions = document.getElementById('actions');
+const dl = document.getElementById('dl');
+const vnote = document.getElementById('vnote');
+let file = null;
+let rafId = null;
+
+function setFile(f) {
+  if (!f || !f.type.startsWith('image/')) return;
+  file = f;
+  preview.src = URL.createObjectURL(f);
+  preview.style.display = 'inline';
+  drop.firstChild.textContent = f.name + ' — click to change';
+}
+drop.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => setFile(e.target.files[0]));
+['dragover', 'dragenter'].forEach(ev => drop.addEventListener(ev, e => {
+  e.preventDefault(); drop.classList.add('over');
+}));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => {
+  e.preventDefault(); drop.classList.remove('over');
+}));
+drop.addEventListener('drop', e => setFile(e.dataTransfer.files[0]));
+
+go.addEventListener('click', async () => {
+  errorEl.textContent = '';
+  if (!file) { errorEl.textContent = 'Pick an image first.'; return; }
+  go.disabled = true;
+  progress.style.display = 'block';
+  actions.style.display = 'none';
+  viewer.style.display = 'none';
+  vnote.style.display = 'none';
+  try {
+    const fd = new FormData();
+    fd.append('image', file);
+    fd.append('seed', document.getElementById('seed').value || 0);
+    fd.append('quality', document.getElementById('quality').value);
+    const r = await fetch('/api/generate', { method: 'POST', body: fd });
+    if (!r.ok) throw new Error('generate failed: HTTP ' + r.status);
+    const { job_id } = await r.json();
+    await poll(job_id);
+  } catch (e) {
+    errorEl.textContent = String(e.message || e);
+  } finally {
+    go.disabled = false;
+  }
+});
+
+async function poll(job_id) {
+  for (;;) {
+    const s = await (await fetch('/api/status/' + job_id)).json();
+    bar.style.width = Math.round((s.progress || 0) * 100) + '%';
+    statusEl.textContent = s.status + ' — ' + (s.message || '');
+    if (s.status === 'completed') { await showResult(job_id); return; }
+    if (s.status === 'failed' || s.status === 'cancelled') {
+      throw new Error('job ' + s.status + (s.error ? ': ' + s.error : ''));
+    }
+    await new Promise(r => setTimeout(r, 1000));
+  }
+}
+
+async function showResult(job_id) {
+  if (rafId) cancelAnimationFrame(rafId);
+  const blob = await (await fetch('/api/result/' + job_id)).blob();
+  const url = URL.createObjectURL(blob);
+  dl.href = url;
+  dl.download = 'plushy-' + job_id + '.glb';
+  actions.style.display = 'flex';
+  viewer.style.display = 'block';
+  try {
+    const THREE = await import('three');
+    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+    const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
+    const renderer = new THREE.WebGLRenderer({ canvas: viewer, antialias: true });
+    renderer.setSize(viewer.clientWidth, viewer.clientHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a0a);
+    const cam = new THREE.PerspectiveCamera(45,
+      viewer.clientWidth / viewer.clientHeight, 0.01, 100);
+    cam.position.set(2.2, 1.4, 2.2);
+    const ctl = new OrbitControls(cam, viewer);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x334, 1.1));
+    const dir = new THREE.DirectionalLight(0xffffff, 1.6);
+    dir.position.set(3, 5, 2); scene.add(dir);
+    const gltf = await new GLTFLoader().loadAsync(url);
+    scene.add(gltf.scene);
+    const box = new THREE.Box3().setFromObject(gltf.scene);
+    const c = box.getCenter(new THREE.Vector3());
+    ctl.target.copy(c);
+    (function tick() {
+      rafId = requestAnimationFrame(tick);
+      gltf.scene.rotation.y += 0.008;
+      ctl.update(); renderer.render(scene, cam);
+    })();
+  } catch (e) {
+    vnote.style.display = 'block';
+    vnote.textContent = '3D preview needs internet (three.js CDN). ' +
+      'Download the .GLB and open it in Windows 3D Viewer instead.';
+  }
+}
+</script>
+</body>
+</html>
