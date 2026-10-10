@@ -37,7 +37,7 @@ RUN pip install -r requirements.txt
 # breaks torch 2.3.
 ENV ATTN_BACKEND=xformers \
     PYTHONPATH=/opt/TRELLIS
-RUN git clone --depth 1 https://github.com/microsoft/TRELLIS.git /opt/TRELLIS \
+RUN git clone --depth 1 --recursive https://github.com/microsoft/TRELLIS.git /opt/TRELLIS \
  && pip install spconv-cu121 "timm==0.9.16" "transformers==4.46.3" \
       "huggingface_hub==0.26.5" "open3d==0.18.0" "plyfile==1.1.2" \
       easydict "opencv-python-headless==4.10.0.84" \
