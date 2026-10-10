@@ -10,18 +10,8 @@
          margin: 2rem auto; padding: 0 1.2rem; background: #141414; color: #eee; }
   h1 { font-size: 1.6rem; }
   h1 small { color: #888; font-weight: normal; font-size: 0.9rem; }
-  .tabs { display: flex; gap: .5rem; margin-bottom: 1rem; }
-  .tab { background: #222; color: #aaa; border: 1px solid #333; border-radius: 8px;
-         padding: .6rem 1.4rem; cursor: pointer; font-size: 1rem; }
-  .tab.active { background: #3a7bd5; color: #fff; border-color: #3a7bd5; }
   .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px;
           padding: 1.2rem; margin-bottom: 1rem; }
-  .pane { display: none; }
-  .pane.active { display: block; }
-  #drop { border: 2px dashed #555; border-radius: 12px; padding: 2.2rem 1rem;
-          text-align: center; color: #aaa; cursor: pointer; margin-bottom: 1rem; }
-  #drop.over { border-color: #7ab; background: #1a2530; color: #cde; }
-  #drop img { max-width: 220px; max-height: 220px; border-radius: 8px; margin-top: .6rem; }
   .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
   label { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: #aaa; }
   select, input[type=number], textarea { background: #222; color: #eee;
@@ -35,9 +25,8 @@
   .bar { height: 100%; width: 0%; background: #3a7bd5; transition: width .3s; }
   .status { color: #aaa; font-size: .9rem; min-height: 1.4em; }
   .error { color: #f66; font-size: .9rem; white-space: pre-wrap; }
-  #viewer { width: 100%; height: 420px; border-radius: 12px; background: #0a0a0a;
-            display: none; margin-top: .6rem; }
-  #spriteOut { max-width: 100%; border-radius: 12px; display: none; margin-top: .6rem;
+  #spriteOut { max-width: 100%; max-height: 480px; border-radius: 12px; display: none;
+          margin-top: .6rem;
           background: repeating-conic-gradient(#2a2a2a 0 25%, #1a1a1a 0 50%) 0 0/24px 24px; }
   .actions { margin-top: .8rem; display: none; gap: .8rem; }
   .actions a { background: #2a2a2a; color: #eee; padding: .6rem 1.2rem;
@@ -46,218 +35,58 @@
 </style>
 </head>
 <body>
-<h1>🧸 Plushy AI Studio <small>image → 3D · text → sprite</small></h1>
+<h1>🧸 Plushy AI Studio <small>text → sprite</small></h1>
 
-<div class="tabs">
-  <button class="tab active" data-pane="p3d">3D Model</button>
-  <button class="tab" data-pane="psprite">Sprite</button>
-</div>
-
-<!-- ============ 3D pane ============ -->
-<div class="pane active" id="p3d">
-  <div class="card">
-    <div id="drop">Drop an image here, or click to choose one
-      <div><img id="preview" alt="" style="display:none"></div>
-    </div>
-    <input type="file" id="file" accept="image/*" style="display:none">
-    <div class="row">
-      <label>Quality
-        <select id="quality">
-          <option value="balanced" selected>balanced (default)</option>
-          <option value="draft">draft (fast)</option>
-          <option value="detailed">detailed (slow, more VRAM)</option>
-        </select>
-      </label>
-      <label>Seed
-        <input type="number" id="seed" value="0" min="0" style="width:6rem">
-      </label>
-      <button class="go" id="go3d">Generate 3D</button>
-    </div>
-    <div class="progress" id="progress3d"><div class="bar" id="bar3d"></div></div>
-    <div class="status" id="status3d"></div>
-    <div class="error" id="error3d"></div>
-  </div>
-  <div class="card">
-    <h3 style="margin-top:0">Result</h3>
-    <canvas id="viewer"></canvas>
-    <div class="actions" id="actions3d"><a id="dl3d" href="#" download>Download .GLB</a></div>
-    <div class="note" id="vnote" style="display:none"></div>
-  </div>
-</div>
-
-<!-- ============ Sprite pane ============ -->
-<div class="pane" id="psprite">
-  <div class="card">
-    <label>Prompt
-      <textarea id="prompt" placeholder="a pine tree, game sprite"></textarea>
+<div class="card">
+  <label>Prompt
+    <textarea id="prompt" placeholder="a pine tree"></textarea>
+  </label>
+  <div class="row" style="margin-top:.8rem">
+    <label>Size
+      <select id="ssize">
+        <option value="256">256 px</option>
+        <option value="512" selected>512 px</option>
+        <option value="1024">1024 px</option>
+      </select>
     </label>
-    <div class="row" style="margin-top:.8rem">
-      <label>Size
-        <select id="ssize">
-          <option value="256">256 px</option>
-          <option value="512" selected>512 px</option>
-          <option value="1024">1024 px</option>
-        </select>
-      </label>
-      <label>Seed
-        <input type="number" id="sseed" value="0" min="0" style="width:6rem">
-      </label>
-      <button class="go" id="gosprite">Generate Sprite</button>
-    </div>
-    <div class="progress" id="progressS"><div class="bar" id="barS"></div></div>
-    <div class="status" id="statusS"></div>
-    <div class="error" id="errorS"></div>
+    <label>Seed
+      <input type="number" id="sseed" value="0" min="0" style="width:6rem">
+    </label>
+    <button class="go" id="go">Generate Sprite</button>
   </div>
-  <div class="card">
-    <h3 style="margin-top:0">Result</h3>
-    <img id="spriteOut" alt="generated sprite">
-    <div class="actions" id="actionsS"><a id="dlS" href="#" download>Download .PNG</a></div>
-  </div>
+  <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
+  <div class="status" id="status"></div>
+  <div class="error" id="error"></div>
 </div>
 
-<div class="note">Mock mode = placeholder outputs (no GPU here). Real generation
-happens in Docker on your RTX 4060 — see GPU_RUNBOOK.md.</div>
+<div class="card">
+  <h3 style="margin-top:0">Result</h3>
+  <img id="spriteOut" alt="generated sprite">
+  <div class="actions" id="actions"><a id="dl" href="#" download>Download .PNG</a></div>
+</div>
 
-<script type="importmap">
-{ "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-} }
-</script>
-<script type="module">
-/* ---------- tabs ---------- */
-document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
-  t.classList.add('active');
-  document.getElementById(t.dataset.pane).classList.add('active');
-}));
+<div class="note">Mock mode = placeholder sprites (no GPU here). Real generation
+happens in Docker on your RTX 4060.</div>
 
-/* ---------- shared poll ---------- */
-async function pollStatus(jobId, bar, statusEl) {
-  for (;;) {
-    const s = await (await fetch('/api/status/' + jobId)).json();
-    bar.style.width = Math.round((s.progress || 0) * 100) + '%';
-    statusEl.textContent = s.status + ' — ' + (s.message || '');
-    if (s.status === 'completed') return s;
-    if (s.status === 'failed' || s.status === 'cancelled')
-      throw new Error('job ' + s.status + (s.error ? ': ' + s.error : ''));
-    await new Promise(r => setTimeout(r, 1000));
-  }
-}
-function resetPane(pfx) {
-  document.getElementById('bar' + pfx).style.width = '0%';
-  document.getElementById('progress' + pfx).style.display = 'block';
-  document.getElementById('status' + pfx).textContent = '';
-  document.getElementById('error' + pfx).textContent = '';
-}
-
-/* ---------- 3D pane ---------- */
-const drop = document.getElementById('drop');
-const fileInput = document.getElementById('file');
-const preview = document.getElementById('preview');
-const go3d = document.getElementById('go3d');
-const viewer = document.getElementById('viewer');
-const actions3d = document.getElementById('actions3d');
-const dl3d = document.getElementById('dl3d');
-const vnote = document.getElementById('vnote');
-let file = null, rafId = null;
-
-function setFile(f) {
-  if (!f || !f.type.startsWith('image/')) return;
-  file = f;
-  preview.src = URL.createObjectURL(f);
-  preview.style.display = 'inline';
-  drop.firstChild.textContent = f.name + ' — click to change';
-}
-drop.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => setFile(e.target.files[0]));
-['dragover', 'dragenter'].forEach(ev => drop.addEventListener(ev, e => {
-  e.preventDefault(); drop.classList.add('over');
-}));
-['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => {
-  e.preventDefault(); drop.classList.remove('over');
-}));
-drop.addEventListener('drop', e => setFile(e.dataTransfer.files[0]));
-
-go3d.addEventListener('click', async () => {
-  const errEl = document.getElementById('error3d');
-  errEl.textContent = '';
-  if (!file) { errEl.textContent = 'Pick an image first.'; return; }
-  go3d.disabled = true;
-  resetPane('3d');
-  actions3d.style.display = 'none';
-  viewer.style.display = 'none';
-  vnote.style.display = 'none';
-  if (rafId) cancelAnimationFrame(rafId);
-  try {
-    const fd = new FormData();
-    fd.append('image', file);
-    fd.append('seed', document.getElementById('seed').value || 0);
-    fd.append('quality', document.getElementById('quality').value);
-    const r = await fetch('/api/generate', { method: 'POST', body: fd });
-    if (!r.ok) throw new Error('generate failed: HTTP ' + r.status);
-    const { job_id } = await r.json();
-    await pollStatus(job_id,
-      document.getElementById('bar3d'), document.getElementById('status3d'));
-    await showResult3d(job_id);
-  } catch (e) { errEl.textContent = String(e.message || e); }
-  finally { go3d.disabled = false; }
-});
-
-async function showResult3d(job_id) {
-  const blob = await (await fetch('/api/result/' + job_id)).blob();
-  const url = URL.createObjectURL(blob);
-  dl3d.href = url;
-  dl3d.download = 'plushy-' + job_id + '.glb';
-  actions3d.style.display = 'flex';
-  viewer.style.display = 'block';
-  try {
-    const THREE = await import('three');
-    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
-    const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
-    const renderer = new THREE.WebGLRenderer({ canvas: viewer, antialias: true });
-    renderer.setSize(viewer.clientWidth, viewer.clientHeight);
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a0a);
-    const cam = new THREE.PerspectiveCamera(45,
-      viewer.clientWidth / viewer.clientHeight, 0.01, 100);
-    cam.position.set(2.2, 1.4, 2.2);
-    const ctl = new OrbitControls(cam, viewer);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x334, 1.1));
-    const dir = new THREE.DirectionalLight(0xffffff, 1.6);
-    dir.position.set(3, 5, 2); scene.add(dir);
-    const gltf = await new GLTFLoader().loadAsync(url);
-    scene.add(gltf.scene);
-    const box = new THREE.Box3().setFromObject(gltf.scene);
-    ctl.target.copy(box.getCenter(new THREE.Vector3()));
-    (function tick() {
-      rafId = requestAnimationFrame(tick);
-      gltf.scene.rotation.y += 0.008;
-      ctl.update(); renderer.render(scene, cam);
-    })();
-  } catch (e) {
-    vnote.style.display = 'block';
-    vnote.textContent = '3D preview needs internet (three.js CDN). ' +
-      'Download the .GLB and open it in Windows 3D Viewer instead.';
-  }
-}
-
-/* ---------- Sprite pane ---------- */
-const gosprite = document.getElementById('gosprite');
+<script>
+const go = document.getElementById('go');
+const bar = document.getElementById('bar');
+const progress = document.getElementById('progress');
+const statusEl = document.getElementById('status');
+const errorEl = document.getElementById('error');
 const spriteOut = document.getElementById('spriteOut');
-const actionsS = document.getElementById('actionsS');
-const dlS = document.getElementById('dlS');
+const actions = document.getElementById('actions');
+const dl = document.getElementById('dl');
 
-gosprite.addEventListener('click', async () => {
-  const errEl = document.getElementById('errorS');
-  errEl.textContent = '';
+go.addEventListener('click', async () => {
+  errorEl.textContent = '';
   const prompt = document.getElementById('prompt').value.trim();
-  if (!prompt) { errEl.textContent = 'Type a prompt first.'; return; }
-  gosprite.disabled = true;
-  resetPane('S');
-  actionsS.style.display = 'none';
+  if (!prompt) { errorEl.textContent = 'Type a prompt first.'; return; }
+  go.disabled = true;
+  bar.style.width = '0%';
+  progress.style.display = 'block';
+  statusEl.textContent = '';
+  actions.style.display = 'none';
   spriteOut.style.display = 'none';
   try {
     const r = await fetch('/api/sprite', {
@@ -275,17 +104,24 @@ gosprite.addEventListener('click', async () => {
       throw new Error('sprite failed: HTTP ' + r.status + ' ' + t.slice(0, 200));
     }
     const { job_id } = await r.json();
-    await pollStatus(job_id,
-      document.getElementById('barS'), document.getElementById('statusS'));
+    for (;;) {
+      const s = await (await fetch('/api/status/' + job_id)).json();
+      bar.style.width = Math.round((s.progress || 0) * 100) + '%';
+      statusEl.textContent = s.status + ' — ' + (s.message || '');
+      if (s.status === 'completed') break;
+      if (s.status === 'failed' || s.status === 'cancelled')
+        throw new Error('job ' + s.status + (s.error ? ': ' + s.error : ''));
+      await new Promise(r => setTimeout(r, 1000));
+    }
     const blob = await (await fetch('/api/result/' + job_id)).blob();
     const url = URL.createObjectURL(blob);
     spriteOut.src = url;
     spriteOut.style.display = 'block';
-    dlS.href = url;
-    dlS.download = 'plushy-sprite-' + job_id + '.png';
-    actionsS.style.display = 'flex';
-  } catch (e) { errEl.textContent = String(e.message || e); }
-  finally { gosprite.disabled = false; }
+    dl.href = url;
+    dl.download = 'plushy-sprite-' + job_id + '.png';
+    actions.style.display = 'flex';
+  } catch (e) { errorEl.textContent = String(e.message || e); }
+  finally { go.disabled = false; }
 });
 </script>
 </body>

@@ -36,7 +36,7 @@ call .venv\Scripts\activate.bat
 
 echo [3/4] Installing dependencies ^(first run takes a minute or two^)...
 python -m pip install -q --upgrade pip
-python -m pip install -q fastapi uvicorn python-multipart httpx pillow numpy trimesh
+python -m pip install -q fastapi uvicorn python-multipart httpx pillow numpy
 if errorlevel 1 (
     echo.
     echo   Dependency install failed. Run this file again;
