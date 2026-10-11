@@ -93,10 +93,14 @@ class _SDXLSpriteBackend:
         import torch
         log.info("loading sprite model %s ...", SPRITE_MODEL)
         from diffusers import AutoPipelineForText2Image
+        # stabilityai/sdxl-turbo is a gated model: the Hugging Face account
+        # must accept its license, and downloads need HF_TOKEN set.
+        token = os.environ.get("HF_TOKEN") or None
         pipe = AutoPipelineForText2Image.from_pretrained(
             SPRITE_MODEL,
             torch_dtype=torch.float16 if DEVICE == "cuda" else torch.float32,
             variant="fp16" if DEVICE == "cuda" else None,
+            token=token,
         )
         if DEVICE == "cuda":
             pipe.to("cuda")
