@@ -1,0 +1,13 @@
+# Character hairstyles — TEST batch (Han 2026-10-11: explicit test request).
+# Run on GPU PC: python sprites.py --prompts prompts/char_hairstyles.txt --seeds 2 --size 768 --output ./char_sprites/hairstyles
+# Style: single hairstyle, front view, isolated game sprite, transparent PNG.
+# Espil/Lunaris canon pieces first, then variety.
+
+short pink bob haircut, full bangs covering the eyes, front view
+ultra-long silver-white hair, straight, subtle blue pink purple iridescence, front view
+black long straight hair with hime cut, front view
+ash gray messy medium hair, front view
+pastel green twin-tails, front view
+silver undercut, short sides long top, front view
+wavy chestnut brown long hair, front view
+white high ponytail, front view

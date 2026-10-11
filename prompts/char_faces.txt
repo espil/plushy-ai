@@ -1,0 +1,12 @@
+# Character face styles — TEST batch (Han 2026-10-11: explicit test request).
+# Run on GPU PC: python sprites.py --prompts prompts/char_faces.txt --seeds 2 --size 768 --output ./char_sprites/faces
+# Style: single face, front view, isolated game sprite, transparent PNG.
+# NOTE: Espil's own face is never shown in canon (mystery concept) — these are
+# generic NPC/player face style tests only.
+
+soft anime-style female face, gentle smile, front view
+sharp cool male face, neutral expression, front view
+round cheerful face, big smile, front view
+elegant noble face, calm expression, front view
+mysterious face half-covered by long bangs, front view
+freckled youthful face, bright expression, front view

@@ -1,0 +1,15 @@
+# Character clothes — TEST batch (Han 2026-10-11: explicit test request).
+# Run on GPU PC: python sprites.py --prompts prompts/char_clothes.txt --seeds 2 --size 768 --output ./char_sprites/clothes
+# Style: single clothing item, front view, flat-lay game sprite, transparent PNG.
+# Espil canon pieces first, then streetwear variety.
+
+black turtleneck sweater, front view, folded sleeves
+oversized teal sweater, front view, cozy knit
+white oversized hoodie, front view, streetwear
+black cargo pants, front view, multiple pockets
+pleated tennis skirt, front view, school style
+denim jacket, front view, classic blue
+long beige trench coat, front view
+striped sailor shirt, front view, navy and white
+red plaid flannel shirt, front view
+black leather jacket, front view, biker style
