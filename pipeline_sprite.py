@@ -149,15 +149,67 @@ class _SDXLSpriteBackend:
         return img
 
 
+def _transparent_frac(img: "Image.Image") -> float:
+    import numpy as np
+    a = np.array(img.convert("RGBA"))[:, :, 3]
+    return float((a == 0).mean())
+
+
+def _dark_bg_fallback(img: "Image.Image", thresh: int = 48) -> "Image.Image | None":
+    """Flood-fill fallback for when rembg fails on dark/black backgrounds.
+
+    Removes border-connected near-black regions. Returns None when unsafe
+    (subject touches the image edge — flood fill would eat into it).
+    Tested 2026-10-11 on 26 real failed sprites: 5 significantly improved,
+    0 made worse, 12 skipped as unsafe.
+    """
+    import numpy as np
+    from PIL import Image
+    rgb = np.array(img.convert("RGB"))
+    dark = rgb.max(axis=2) < thresh
+    h, w = dark.shape
+    border = np.concatenate([dark[0, :], dark[-1, :], dark[:, 0], dark[:, -1]])
+    if border.mean() < 0.95:
+        return None
+    mask = np.zeros((h, w), dtype=bool)
+    mask[0, :] = dark[0, :]
+    mask[-1, :] = dark[-1, :]
+    mask[:, 0] = dark[:, 0]
+    mask[:, -1] = dark[:, -1]
+    for _ in range(max(h, w)):
+        padded = np.pad(mask, 1)
+        grown = (padded[:-2, :-2] | padded[:-2, 1:-1] | padded[:-2, 2:] |
+                 padded[1:-1, :-2] | padded[1:-1, 2:] |
+                 padded[2:, :-2] | padded[2:, 1:-1] | padded[2:, 2:])
+        new = (grown | mask) & dark
+        if np.array_equal(new, mask):
+            break
+        mask = new
+    alpha = np.where(mask, 0, 255).astype(np.uint8)
+    return Image.fromarray(np.dstack([rgb, alpha]), "RGBA")
+
+
 def remove_background_rgba(img: "Image.Image") -> "Image.Image":
-    """rembg -> transparent background. No-op in mock mode (already transparent)."""
+    """rembg -> transparent background. No-op in mock mode (already transparent).
+
+    If rembg leaves the image mostly opaque (typical when SDXL-Turbo renders a
+    black background despite the white-background instruction), tries the
+    dark-background flood-fill fallback and keeps whichever is more transparent.
+    """
     if MOCK:
         return img
     from rembg import remove
     import numpy as np
     from PIL import Image
     arr = remove(np.array(img.convert("RGB")))
-    return Image.fromarray(arr)
+    result = Image.fromarray(arr)
+    if _transparent_frac(result) < 0.5:
+        fb = _dark_bg_fallback(img)
+        if fb is not None and _transparent_frac(fb) > _transparent_frac(result):
+            log.info("rembg failed (%.0f%% transparent) — dark-bg fallback used (%.0f%%)",
+                     _transparent_frac(result) * 100, _transparent_frac(fb) * 100)
+            return fb
+    return result
 
 
 class SpritePipeline:

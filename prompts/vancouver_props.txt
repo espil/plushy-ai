@@ -4,9 +4,9 @@
 # single centered object, fully visible, isolated on white (billboard sprite).
 
 # --- totem poles (indigenous pacific northwest) ---
-tall cedar totem pole, carved raven with spread wings on top, red and black paint
-cedar totem pole, stacked bear and salmon figures, traditional formline carving
-tall welcome totem pole, carved human figure with raised arms
+tall cedar totem pole standing upright, full length visible from base to top, carved raven with spread wings on top, red and black paint
+tall cedar totem pole standing upright, full length visible, stacked bear and salmon figures, traditional formline carving
+tall welcome totem pole standing upright, full length visible from base to top, carved human figure with raised arms
 
 # --- pacific northwest forest ---
 towering douglas fir tree, dense evergreen needles
