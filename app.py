@@ -67,6 +67,7 @@ class Job:
     seed: int = 0
     size: int = 512
     steps: int = 4
+    negative_prompt: Optional[str] = None
     status: JobStatus = JobStatus.QUEUED
     progress: float = 0.0
     message: str = "queued"
@@ -117,6 +118,7 @@ class SpriteRequest(BaseModel):
     seed: int = 0
     size: int = Field(512, description="square size in px (64-1024)")
     steps: int = Field(4, description="inference steps (SDXL-Turbo: 1-4)")
+    negative_prompt: Optional[str] = Field(None, description="overrides the default negative prompt")
 
 
 def _job_to_response(job: Job) -> StatusResponse:
@@ -164,6 +166,8 @@ async def _worker(worker_id: int):
                 seed=job.seed,
                 num_inference_steps=job.steps,
             )
+            if job.negative_prompt:
+                sopts.negative_prompt = job.negative_prompt
             dest = OUTPUT_DIR / f"{job_id}.sprite.png"
             t0 = time.time()
             loop = asyncio.get_running_loop()
@@ -254,6 +258,7 @@ async def sprite(req: SpriteRequest):
         seed=req.seed,
         size=max(64, min(req.size, 1024)),
         steps=max(1, min(req.steps, 12)),
+        negative_prompt=req.negative_prompt,
     )
     await job_queue.put(job_id)
     log.info("enqueued sprite job %s (queue depth %d)", job_id, job_queue.qsize())

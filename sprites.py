@@ -52,6 +52,8 @@ def main():
     ap.add_argument("--seeds", type=int, default=1, help="seeds per prompt (0..N-1 from --seed)")
     ap.add_argument("--steps", type=int, default=4, help="inference steps (SDXL-Turbo: 1-4)")
     ap.add_argument("--no-bg-remove", action="store_true", help="skip background removal")
+    ap.add_argument("--negative", default=None,
+                    help="negative prompt (overrides default)")
     ap.add_argument("--mock", action="store_true", help="force mock mode")
     ap.add_argument("--skip-existing", action="store_true")
     args = ap.parse_args()
@@ -95,6 +97,8 @@ def main():
                     num_inference_steps=args.steps,
                     remove_background=not args.no_bg_remove,
                 )
+                if args.negative:
+                    opts.negative_prompt = args.negative
                 pipe.generate_to_file(prompt, dest, opts)
                 entry["status"] = "ok"
                 ok += 1

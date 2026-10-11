@@ -39,7 +39,8 @@ SPRITE_SUFFIX = ", game sprite, centered, isolated on a plain white background"
 @dataclass
 class SpriteOptions:
     prompt: str = ""
-    negative_prompt: str = "blurry, watermark, text, cropped, multiple objects"
+    negative_prompt: str = ("blurry, watermark, text, cropped, multiple objects, "
+                              "dark, silhouette, black background, gloomy, night")
     width: int = 512
     height: int = 512
     seed: int = 0
