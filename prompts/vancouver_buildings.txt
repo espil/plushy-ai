@@ -1,0 +1,24 @@
+# Vancouver concept — multicultural + indigenous + avant-garde new city
+# Run:  python sprites.py --prompts prompts/vancouver_buildings.txt --subject-type building --seeds 2 --size 768 --output ./city_sprites
+# One prompt per line. # = comment. The "building" preset frames each as:
+# straight-on front elevation, flat facade, fully visible (billboard sprite).
+
+# --- avant-garde new city ---
+twisted glass tower, spiraling futuristic facade, new city landmark
+parametric cultural center, flowing curved white facade, organic architecture
+cantilevered art gallery, bold stacked geometric volumes
+sail-shaped waterfront pavilion, white fabric sails, glass and timber base
+
+# --- modern asphalt / concrete ---
+dark asphalt-toned concrete office block, minimalist grid facade
+brutalist residential tower, raw concrete, deep-set balconies
+monolithic black steel commercial building, sharp angular form
+
+# --- multicultural street ---
+historic chinatown shophouse, ornate balconies, decorative cornice
+punjabi market hall, vibrant colored storefronts, arched entry
+modern community hall with white dome, geometric facade details
+
+# --- indigenous / pacific northwest ---
+modern longhouse cultural center, cedar wood facade, carved wooden panels
+cedar plank community hall, totem entrance posts, wide low roofline
