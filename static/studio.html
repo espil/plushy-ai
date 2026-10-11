@@ -6,31 +6,43 @@
 <title>Plushy AI Studio</title>
 <style>
   :root { color-scheme: dark; }
-  body { font-family: system-ui, -apple-system, sans-serif; max-width: 860px;
+  body { font-family: system-ui, -apple-system, sans-serif; max-width: 960px;
          margin: 2rem auto; padding: 0 1.2rem; background: #141414; color: #eee; }
   h1 { font-size: 1.6rem; }
   h1 small { color: #888; font-weight: normal; font-size: 0.9rem; }
+  h3 { margin-top: 0; }
   .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px;
           padding: 1.2rem; margin-bottom: 1rem; }
-  .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+  .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; margin-top: .8rem; }
   label { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: #aaa; }
+  label.full { width: 100%; }
   select, input[type=number], textarea { background: #222; color: #eee;
           border: 1px solid #444; border-radius: 8px; padding: .5rem .7rem; font-size: 1rem; }
-  textarea { width: 100%; min-height: 4.5rem; resize: vertical; box-sizing: border-box; }
+  textarea { width: 100%; min-height: 3.2rem; resize: vertical; box-sizing: border-box; }
+  textarea.tall { min-height: 4.5rem; }
   button.go { background: #3a7bd5; color: #fff; border: none; border-radius: 8px;
           padding: .7rem 1.6rem; font-size: 1rem; cursor: pointer; }
   button.go:disabled { background: #444; cursor: wait; }
   .progress { height: 10px; background: #222; border-radius: 6px; overflow: hidden;
-          margin: .8rem 0 .3rem; display: none; }
+          margin: .4rem 0 .2rem; }
   .bar { height: 100%; width: 0%; background: #3a7bd5; transition: width .3s; }
-  .status { color: #aaa; font-size: .9rem; min-height: 1.4em; }
-  .error { color: #f66; font-size: .9rem; white-space: pre-wrap; }
-  #spriteOut { max-width: 100%; max-height: 480px; border-radius: 12px; display: none;
-          margin-top: .6rem;
-          background: repeating-conic-gradient(#2a2a2a 0 25%, #1a1a1a 0 50%) 0 0/24px 24px; }
-  .actions { margin-top: .8rem; display: none; gap: .8rem; }
-  .actions a { background: #2a2a2a; color: #eee; padding: .6rem 1.2rem;
-          border-radius: 8px; text-decoration: none; border: 1px solid #444; }
+  .status { color: #aaa; font-size: .85rem; min-height: 1.2em; }
+  .error { color: #f66; font-size: .9rem; white-space: pre-wrap; margin-top: .5rem; }
+  .jobcard { background: #222; border: 1px solid #3a3a3a; border-radius: 8px;
+          padding: .6rem .8rem; margin-top: .6rem; }
+  .joblabel { font-size: .85rem; color: #ccc; }
+  .checker { background: repeating-conic-gradient(#2a2a2a 0 25%, #1a1a1a 0 50%) 0 0/24px 24px; }
+  #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 1rem; }
+  #gallery figure { margin: 0; border: 1px solid #333; border-radius: 12px; overflow: hidden;
+          background: #1a1a1a; }
+  #gallery img { width: 100%; aspect-ratio: 1; object-fit: contain; display: block; }
+  #gallery figcaption { padding: .5rem .7rem; font-size: .8rem; color: #aaa;
+          display: flex; justify-content: space-between; align-items: center; }
+  #gallery figcaption a { color: #7ab; text-decoration: none; border: 1px solid #444;
+          border-radius: 6px; padding: .25rem .6rem; }
+  #gallery figcaption a:hover { background: #2a2a2a; }
+  .empty { color: #666; font-size: .9rem; }
   .note { color: #777; font-size: .8rem; margin-top: 1rem; }
 </style>
 </head>
@@ -38,91 +50,150 @@
 <h1>🧸 Plushy AI Studio <small>text → sprite</small></h1>
 
 <div class="card">
-  <label>Prompt
-    <textarea id="prompt" placeholder="a pine tree"></textarea>
+  <label class="full">Prompt
+    <textarea id="prompt" class="tall" placeholder="a lush green pine tree, vibrant foliage, detailed bark, bright daylight"></textarea>
   </label>
-  <div class="row" style="margin-top:.8rem">
+  <label class="full" style="margin-top:.6rem">Negative prompt <span style="color:#666">(empty = use default)</span>
+    <textarea id="negative" placeholder="default: blurry, watermark, text, cropped, multiple objects, dark, silhouette, black background, gloomy, night"></textarea>
+  </label>
+  <div class="row">
     <label>Size
-      <select id="ssize">
+      <select id="size">
         <option value="256">256 px</option>
         <option value="512" selected>512 px</option>
         <option value="1024">1024 px</option>
       </select>
     </label>
     <label>Seed
-      <input type="number" id="sseed" value="0" min="0" style="width:6rem">
+      <input type="number" id="seed" value="0" min="0" style="width:6rem">
     </label>
-    <button class="go" id="go">Generate Sprite</button>
+    <label>Variations
+      <select id="count">
+        <option value="1" selected>1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+    </label>
+    <label>Steps
+      <select id="steps">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4" selected>4</option>
+      </select>
+    </label>
+    <button class="go" id="go">Generate</button>
   </div>
-  <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
-  <div class="status" id="status"></div>
+  <div id="jobs"></div>
   <div class="error" id="error"></div>
 </div>
 
 <div class="card">
-  <h3 style="margin-top:0">Result</h3>
-  <img id="spriteOut" alt="generated sprite">
-  <div class="actions" id="actions"><a id="dl" href="#" download>Download .PNG</a></div>
+  <h3>Results</h3>
+  <div id="gallery"><div class="empty">Nothing yet — generate a sprite above.</div></div>
 </div>
 
-<div class="note">Mock mode = placeholder sprites (no GPU here). Real generation
-happens in Docker on your RTX 4060.</div>
+<div class="note">Variations run seeds back-to-back (seed, seed+1, …) so you can pick
+the best. Mock mode = placeholder sprites (no GPU here). Real generation happens
+in Docker on your GPU.</div>
 
 <script>
-const go = document.getElementById('go');
-const bar = document.getElementById('bar');
-const progress = document.getElementById('progress');
-const statusEl = document.getElementById('status');
-const errorEl = document.getElementById('error');
-const spriteOut = document.getElementById('spriteOut');
-const actions = document.getElementById('actions');
-const dl = document.getElementById('dl');
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-go.addEventListener('click', async () => {
-  errorEl.textContent = '';
-  const prompt = document.getElementById('prompt').value.trim();
-  if (!prompt) { errorEl.textContent = 'Type a prompt first.'; return; }
-  go.disabled = true;
-  bar.style.width = '0%';
-  progress.style.display = 'block';
-  statusEl.textContent = '';
-  actions.style.display = 'none';
-  spriteOut.style.display = 'none';
+function showError(msg) { $('error').textContent = msg; }
+function clearError() { $('error').textContent = ''; }
+
+$('go').addEventListener('click', async () => {
+  clearError();
+  const prompt = $('prompt').value.trim();
+  if (!prompt) { showError('Type a prompt first.'); return; }
+  const size = parseInt($('size').value);
+  const baseSeed = Math.max(0, parseInt($('seed').value || 0));
+  const count = parseInt($('count').value);
+  const steps = parseInt($('steps').value);
+  const negative = $('negative').value.trim();
+
+  $('go').disabled = true;
+  const runs = [];
+  for (let i = 0; i < count; i++) {
+    runs.push(runJob(prompt, baseSeed + i, size, steps, negative));
+  }
+  await Promise.allSettled(runs);
+  $('go').disabled = false;
+});
+
+async function runJob(prompt, seed, size, steps, negative) {
+  const card = document.createElement('div');
+  card.className = 'jobcard';
+  const label = document.createElement('div');
+  label.className = 'joblabel';
+  label.textContent = 'seed ' + seed + ' — queued';
+  const prog = document.createElement('div');
+  prog.className = 'progress';
+  const bar = document.createElement('div');
+  bar.className = 'bar';
+  prog.appendChild(bar);
+  const status = document.createElement('div');
+  status.className = 'status';
+  card.append(label, prog, status);
+  $('jobs').prepend(card);
+
   try {
     const r = await fetch('/api/sprite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt,
-        seed: parseInt(document.getElementById('sseed').value || 0),
-        size: parseInt(document.getElementById('ssize').value),
-        steps: 4,
+        prompt, seed, size, steps,
+        negative_prompt: negative || null,
       }),
     });
     if (!r.ok) {
       const t = await r.text();
-      throw new Error('sprite failed: HTTP ' + r.status + ' ' + t.slice(0, 200));
+      throw new Error('request failed: HTTP ' + r.status + ' ' + t.slice(0, 200));
     }
     const { job_id } = await r.json();
     for (;;) {
       const s = await (await fetch('/api/status/' + job_id)).json();
       bar.style.width = Math.round((s.progress || 0) * 100) + '%';
-      statusEl.textContent = s.status + ' — ' + (s.message || '');
+      label.textContent = 'seed ' + seed + ' — ' + s.status;
+      status.textContent = s.message || '';
       if (s.status === 'completed') break;
       if (s.status === 'failed' || s.status === 'cancelled')
         throw new Error('job ' + s.status + (s.error ? ': ' + s.error : ''));
-      await new Promise(r => setTimeout(r, 1000));
+      await sleep(1000);
     }
     const blob = await (await fetch('/api/result/' + job_id)).blob();
-    const url = URL.createObjectURL(blob);
-    spriteOut.src = url;
-    spriteOut.style.display = 'block';
-    dl.href = url;
-    dl.download = 'plushy-sprite-' + job_id + '.png';
-    actions.style.display = 'flex';
-  } catch (e) { errorEl.textContent = String(e.message || e); }
-  finally { go.disabled = false; }
-});
+    addToGallery(blob, job_id, seed);
+    card.remove();
+  } catch (e) {
+    label.textContent = 'seed ' + seed + ' — failed';
+    status.textContent = String(e.message || e);
+    status.style.color = '#f66';
+  }
+}
+
+function addToGallery(blob, job_id, seed) {
+  const empty = document.querySelector('#gallery .empty');
+  if (empty) empty.remove();
+  const url = URL.createObjectURL(blob);
+  const fig = document.createElement('figure');
+  const img = document.createElement('img');
+  img.src = url;
+  img.alt = 'sprite seed ' + seed;
+  img.className = 'checker';
+  const cap = document.createElement('figcaption');
+  const span = document.createElement('span');
+  span.textContent = 'seed ' + seed;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'plushy-sprite-' + job_id + '.png';
+  a.textContent = 'download';
+  cap.append(span, a);
+  fig.append(img, cap);
+  $('gallery').prepend(fig);
+}
 </script>
 </body>
 </html>
