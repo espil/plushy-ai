@@ -22,3 +22,7 @@ modern community hall with white dome, geometric facade details
 # --- indigenous / pacific northwest ---
 modern longhouse cultural center, cedar wood facade, carved wooden panels
 cedar plank community hall, totem entrance posts, wide low roofline
+
+# --- robson & gastown (future real-store corridors; placeholders until real stores are built) ---
+victorian heritage retail block, ornate brick facades, vintage cornices, gastown street
+luxury shopping street building, modern glass retail podium, flagship storefronts, robson street
