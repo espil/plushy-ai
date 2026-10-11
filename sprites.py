@@ -50,7 +50,9 @@ def main():
     ap.add_argument("--height", type=int, default=None)
     ap.add_argument("--seed", type=int, default=0, help="base seed")
     ap.add_argument("--seeds", type=int, default=1, help="seeds per prompt (0..N-1 from --seed)")
-    ap.add_argument("--steps", type=int, default=4, help="inference steps (SDXL-Turbo: 1-4)")
+    ap.add_argument("--steps", type=int, default=6, help="inference steps (SDXL-Turbo: 1-4 native, 6-8 adds detail)")
+    ap.add_argument("--subject-type", default="object", choices=["object", "building"],
+                    help="prompt framing preset (building = flat architectural elevation for billboards)")
     ap.add_argument("--no-bg-remove", action="store_true", help="skip background removal")
     ap.add_argument("--negative", default=None,
                     help="negative prompt (overrides default)")
@@ -96,6 +98,7 @@ def main():
                     width=width, height=height, seed=seed,
                     num_inference_steps=args.steps,
                     remove_background=not args.no_bg_remove,
+                    subject_type=args.subject_type,
                 )
                 if args.negative:
                     opts.negative_prompt = args.negative

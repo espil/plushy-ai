@@ -1,0 +1,24 @@
+# City buildings — starter batch for the large-scale city design project.
+# Run:  python sprites.py --prompts prompts/city_buildings.txt --subject-type building --seeds 2 --size 768 --output ./city_sprites
+# One prompt per line. # = comment. Han supplies the important details.
+# The "building" preset frames each as: straight-on front elevation, flat facade,
+# fully visible, isolated on white (rembg -> transparent billboard sprite).
+
+# --- downtown towers ---
+modern glass office tower, blue reflective curtain wall, 30 floors
+concrete residential condo tower with balconies, 25 floors
+heritage brick office building, 6 floors, arched windows
+
+# --- urban mid-rise ---
+red brick walk-up apartment, 4 floors, fire escape stairs
+mixed-use building, retail storefront on ground floor, apartments above
+art deco theater facade with vertical neon sign
+
+# --- commercial / street ---
+corner convenience store, glass storefront, awning
+cozy cafe building, wooden facade, large windows
+small restaurant with outdoor patio umbrellas
+
+# --- civic ---
+modern public library, geometric concrete and glass
+brick fire station with red garage doors

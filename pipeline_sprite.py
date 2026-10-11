@@ -33,21 +33,34 @@ DEVICE = "cuda" if not MOCK else "cpu"
 
 # Prompt suffix that keeps outputs sprite-friendly. The background gets
 # removed by rembg anyway; asking for plain white makes removal cleaner.
-SPRITE_SUFFIX = ", game sprite, centered, isolated on a plain white background"
+# v2 (2026-10-11): explicit "fully visible / nothing cut off" — SDXL-Turbo
+# tended to crop subjects at frame edges, and rembg then clipped the
+# cropped parts further, producing "incomplete" sprites.
+SPRITE_SUFFIX = (", game asset sprite, single object, fully visible, nothing cut off, "
+                 "centered, isolated on a solid pure white background, "
+                 "clean silhouette, sharp details")
+
+# Architecture preset (city project): billboard buildings must read as flat
+# facades — a 3/4 perspective view looks wrong on a camera-facing plane.
+ARCH_SUFFIX = (", architectural elevation, straight-on front view, flat facade, "
+               "fully visible, nothing cut off, isolated on a solid pure white background, "
+               "clean silhouette, sharp details")
 
 
 @dataclass
 class SpriteOptions:
     prompt: str = ""
-    negative_prompt: str = ("blurry, watermark, text, cropped, multiple objects, "
-                              "dark, silhouette, black background, gloomy, night")
+    negative_prompt: str = ("blurry, watermark, text, cropped, cut off, out of frame, "
+                            "partial object, multiple objects, dark, silhouette, "
+                            "black background, gloomy, night, deformed, broken, incomplete")
     width: int = 512
     height: int = 512
     seed: int = 0
-    num_inference_steps: int = 4       # SDXL-Turbo is designed for 1-4
+    num_inference_steps: int = 6       # SDXL-Turbo is designed for 1-4; 6-8 adds detail
     guidance_scale: float = 0.0        # SDXL-Turbo wants 0.0
     remove_background: bool = True
-    sprite_style: bool = True          # append SPRITE_SUFFIX
+    sprite_style: bool = True          # append style suffix
+    subject_type: str = "object"       # "object" -> SPRITE_SUFFIX, "building" -> ARCH_SUFFIX
 
 
 ProgressCallback = Callable[[float, str], None]
@@ -116,7 +129,8 @@ class _SDXLSpriteBackend:
                  progress: Optional[ProgressCallback] = None) -> "Image.Image":
         self.load()
         import torch
-        prompt = opts.prompt + (SPRITE_SUFFIX if opts.sprite_style else "")
+        suffix = ARCH_SUFFIX if opts.subject_type == "building" else SPRITE_SUFFIX
+        prompt = opts.prompt + (suffix if opts.sprite_style else "")
         if progress:
             progress(0.2, "generating sprite")
         gen = torch.Generator(device=DEVICE).manual_seed(opts.seed)
