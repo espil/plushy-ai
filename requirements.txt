@@ -19,4 +19,5 @@ xformers==0.0.27  # must match torch 2.3.x; used by diffusers for memory efficie
 # Sprite pipeline: SDXL-Turbo via diffusers
 diffusers==0.31.0
 accelerate==0.33.0
+transformers==4.46.3  # SDXL text encoders (era pin: torch 2.3 / numpy 1.x)
 safetensors
