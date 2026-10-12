@@ -53,6 +53,10 @@ def main():
     ap.add_argument("--steps", type=int, default=6, help="inference steps (SDXL-Turbo: 1-4 native, 6-8 adds detail)")
     ap.add_argument("--subject-type", default="object", choices=["object", "building"],
                     help="prompt framing preset (building = flat architectural elevation for billboards)")
+    ap.add_argument("--style", default="default", choices=["default", "2.5d"],
+                    help="art style preset (2.5d = stylized pokemon SwSh-like game graphics)")
+    ap.add_argument("--no-crisp", action="store_true",
+                    help="keep soft alpha edges (default: binarize alpha for crisp game sprites)")
     ap.add_argument("--no-bg-remove", action="store_true", help="skip background removal")
     ap.add_argument("--negative", default=None,
                     help="negative prompt (overrides default)")
@@ -99,6 +103,8 @@ def main():
                     num_inference_steps=args.steps,
                     remove_background=not args.no_bg_remove,
                     subject_type=args.subject_type,
+                    style=args.style,
+                    crisp_alpha=not args.no_crisp,
                 )
                 if args.negative:
                     opts.negative_prompt = args.negative

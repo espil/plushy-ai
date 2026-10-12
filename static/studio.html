@@ -83,6 +83,12 @@
         <option value="4" selected>4</option>
       </select>
     </label>
+    <label>Style
+      <select id="style">
+        <option value="default" selected>default</option>
+        <option value="2.5d">2.5D game</option>
+      </select>
+    </label>
     <button class="go" id="go">Generate</button>
   </div>
   <div id="jobs"></div>
@@ -114,17 +120,18 @@ $('go').addEventListener('click', async () => {
   const count = parseInt($('count').value);
   const steps = parseInt($('steps').value);
   const negative = $('negative').value.trim();
+  const style = $('style').value;
 
   $('go').disabled = true;
   const runs = [];
   for (let i = 0; i < count; i++) {
-    runs.push(runJob(prompt, baseSeed + i, size, steps, negative));
+    runs.push(runJob(prompt, baseSeed + i, size, steps, negative, style));
   }
   await Promise.allSettled(runs);
   $('go').disabled = false;
 });
 
-async function runJob(prompt, seed, size, steps, negative) {
+async function runJob(prompt, seed, size, steps, negative, style) {
   const card = document.createElement('div');
   card.className = 'jobcard';
   const label = document.createElement('div');
@@ -145,7 +152,7 @@ async function runJob(prompt, seed, size, steps, negative) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt, seed, size, steps,
+        prompt, seed, size, steps, style,
         negative_prompt: negative || null,
       }),
     });

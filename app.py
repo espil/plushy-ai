@@ -68,6 +68,7 @@ class Job:
     size: int = 512
     steps: int = 4
     negative_prompt: Optional[str] = None
+    style: str = "default"
     status: JobStatus = JobStatus.QUEUED
     progress: float = 0.0
     message: str = "queued"
@@ -119,6 +120,7 @@ class SpriteRequest(BaseModel):
     size: int = Field(512, description="square size in px (64-1024)")
     steps: int = Field(4, description="inference steps (SDXL-Turbo: 1-4)")
     negative_prompt: Optional[str] = Field(None, description="overrides the default negative prompt")
+    style: str = Field("default", description="art style preset: default | 2.5d")
 
 
 def _job_to_response(job: Job) -> StatusResponse:
@@ -165,6 +167,7 @@ async def _worker(worker_id: int):
                 width=job.size, height=job.size,
                 seed=job.seed,
                 num_inference_steps=job.steps,
+                style=job.style,
             )
             if job.negative_prompt:
                 sopts.negative_prompt = job.negative_prompt
@@ -259,6 +262,7 @@ async def sprite(req: SpriteRequest):
         size=max(64, min(req.size, 1024)),
         steps=max(1, min(req.steps, 12)),
         negative_prompt=req.negative_prompt,
+        style=req.style if req.style in ("default", "2.5d") else "default",
     )
     await job_queue.put(job_id)
     log.info("enqueued sprite job %s (queue depth %d)", job_id, job_queue.qsize())

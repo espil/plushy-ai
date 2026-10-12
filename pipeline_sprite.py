@@ -46,6 +46,13 @@ ARCH_SUFFIX = (", architectural elevation, straight-on front view, flat facade, 
                "fully visible, nothing cut off, isolated on a solid pure white background, "
                "clean silhouette, sharp details")
 
+# 2.5D game style (pokemon sword/shield-like): stylized, bold readable
+# silhouettes, vibrant colors, soft cel-shading. Appended after the subject
+# suffix when style="2.5d".
+STYLE_2_5D = (", stylized 2.5D video game asset, pokemon sword and shield style graphics, "
+              "clean bold readable silhouette, vibrant saturated colors, "
+              "soft cel shading, crisp clean edges")
+
 
 @dataclass
 class SpriteOptions:
@@ -61,6 +68,8 @@ class SpriteOptions:
     remove_background: bool = True
     sprite_style: bool = True          # append style suffix
     subject_type: str = "object"       # "object" -> SPRITE_SUFFIX, "building" -> ARCH_SUFFIX
+    style: str = "default"             # "2.5d" -> append STYLE_2_5D (pokemon SwSh-like)
+    crisp_alpha: bool = True           # binarize alpha: kills semi-transparent fringes
 
 
 ProgressCallback = Callable[[float, str], None]
@@ -130,6 +139,8 @@ class _SDXLSpriteBackend:
         self.load()
         import torch
         suffix = ARCH_SUFFIX if opts.subject_type == "building" else SPRITE_SUFFIX
+        if opts.style == "2.5d":
+            suffix += STYLE_2_5D
         prompt = opts.prompt + (suffix if opts.sprite_style else "")
         if progress:
             progress(0.2, "generating sprite")
@@ -189,12 +200,27 @@ def _dark_bg_fallback(img: "Image.Image", thresh: int = 48) -> "Image.Image | No
     return Image.fromarray(np.dstack([rgb, alpha]), "RGBA")
 
 
-def remove_background_rgba(img: "Image.Image") -> "Image.Image":
+def _crisp_alpha(img: "Image.Image", thresh: int = 127) -> "Image.Image":
+    """Binarize the alpha channel: kills semi-transparent fringes/halos that
+    make sprites look ghostly in-game. Game sprites need fully opaque or fully
+    transparent pixels."""
+    import numpy as np
+    from PIL import Image
+    arr = np.array(img.convert("RGBA"))
+    arr[:, :, 3] = np.where(arr[:, :, 3] > thresh, 255, 0).astype(np.uint8)
+    return Image.fromarray(arr)
+
+
+def remove_background_rgba(img: "Image.Image", crisp: bool = True) -> "Image.Image":
     """rembg -> transparent background. No-op in mock mode (already transparent).
 
     If rembg leaves the image mostly opaque (typical when SDXL-Turbo renders a
     black background despite the white-background instruction), tries the
     dark-background flood-fill fallback and keeps whichever is more transparent.
+
+    When crisp=True (default), the alpha channel is binarized at the end so no
+    semi-transparent fringe pixels remain — game sprites must be fully opaque
+    or fully transparent.
     """
     if MOCK:
         return img
@@ -208,7 +234,9 @@ def remove_background_rgba(img: "Image.Image") -> "Image.Image":
         if fb is not None and _transparent_frac(fb) > _transparent_frac(result):
             log.info("rembg failed (%.0f%% transparent) — dark-bg fallback used (%.0f%%)",
                      _transparent_frac(result) * 100, _transparent_frac(fb) * 100)
-            return fb
+            result = fb
+    if crisp:
+        result = _crisp_alpha(result)
     return result
 
 
@@ -228,7 +256,7 @@ class SpritePipeline:
         if o.remove_background and not MOCK:
             if progress:
                 progress(0.9, "removing background")
-            img = remove_background_rgba(img)
+            img = remove_background_rgba(img, crisp=o.crisp_alpha)
         if progress:
             progress(1.0, "done")
         return img
