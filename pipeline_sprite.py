@@ -54,6 +54,13 @@ STYLE_3D = (", polished 3D video game model, cute stylized 3D like everplanet bu
             "vibrant colors, clean stylized geometry, finished game asset quality, "
             "isolated on a solid pure white background, fully visible, nothing cut off")
 
+# Chibi style (MapleStory 2-like): big head tiny body, cute 3D game character.
+# Replaces the subject suffix (avoids conflicting style descriptors).
+STYLE_CHIBI = (", chibi character style, huge round head tiny cute body, "
+               "3D game character like maplestory 2, soft 3D render shading, "
+               "vibrant game colors, clean bold silhouette, fully visible, "
+               "nothing cut off, isolated on solid white background")
+
 # Paper-doll "wear" suffix: img2img prompts that dress the blank body.
 # Keeps pose/proportions; only the described item is added.
 WEAR_SUFFIX = (", wearing this item, keep the exact same body pose, proportions and "
@@ -82,7 +89,7 @@ class SpriteOptions:
     remove_background: bool = True
     sprite_style: bool = True          # append style suffix
     subject_type: str = "object"       # "object" -> SPRITE_SUFFIX, "building" -> ARCH_SUFFIX
-    style: str = "default"             # "2.5d" -> append STYLE_2_5D, "3d" -> STYLE_3D (replaces subject suffix)
+    style: str = "default"             # "2.5d" appends STYLE_2_5D; "3d"/"chibi" replace subject suffix
     crisp_alpha: bool = True           # binarize alpha: kills semi-transparent fringes
 
 
@@ -223,6 +230,8 @@ class _SDXLSpriteBackend:
         import torch
         if opts.style == "3d":
             suffix = STYLE_3D  # own framing (3/4 view), replaces subject suffix
+        elif opts.style == "chibi":
+            suffix = STYLE_CHIBI  # own style, replaces subject suffix
         else:
             suffix = ARCH_SUFFIX if opts.subject_type == "building" else SPRITE_SUFFIX
             if opts.style == "2.5d":

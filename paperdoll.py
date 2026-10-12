@@ -150,7 +150,7 @@ def main():
     w.add_argument("--strength", type=float, default=0.6)
     w.add_argument("--seed", type=int, default=0)
     w.add_argument("--steps", type=int, default=6)
-    w.add_argument("--style", default="2.5d", choices=["default", "2.5d", "3d"])
+    w.add_argument("--style", default="chibi", choices=["default", "2.5d", "3d", "chibi"])
     w.add_argument("--out", required=True)
     w.set_defaults(fn=cmd_wear)
 
@@ -161,7 +161,7 @@ def main():
     b.add_argument("--seed", type=int, default=0)
     b.add_argument("--seeds", type=int, default=1)
     b.add_argument("--steps", type=int, default=6)
-    b.add_argument("--style", default="2.5d", choices=["default", "2.5d", "3d"])
+    b.add_argument("--style", default="chibi", choices=["default", "2.5d", "3d", "chibi"])
     b.add_argument("--diff-thresh", type=int, default=28,
                    help="pixel-diff threshold for layer extraction")
     b.add_argument("--directions", default="",
