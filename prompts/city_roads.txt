@@ -1,0 +1,12 @@
+# City roads — 3D MODEL (everplanet-like, finished quality)
+# Run:  python sprites.py --prompts prompts/city_roads.txt --style 3d --seeds 2 --size 768 --output ./city_sprites
+# The "3d" preset frames each as a polished 3D game model, 3/4 view, isolated on white.
+
+straight two-lane asphalt road segment 3D model, dashed center line, game road tile
+four-way road intersection 3D model, crosswalks, traffic markings
+zebra crosswalk 3D model, pedestrian crossing stripes on asphalt
+sidewalk pavement 3D model, concrete slabs, curb edge
+curved road segment 3D model, asphalt with lane markings
+highway overpass 3D model, elevated concrete roadway on pillars
+roundabout 3D model, circular asphalt with center island
+bike lane road segment 3D model, green painted lane, bicycle symbol

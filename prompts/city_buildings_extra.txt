@@ -1,0 +1,31 @@
+# City buildings EXTRA — 3D MODEL (everplanet-like, finished quality)
+# Han 2026-10-11: many more building varieties needed.
+# Run:  python sprites.py --prompts prompts/city_buildings_extra.txt --style 3d --seeds 2 --size 768 --output ./city_sprites
+# The "3d" preset frames each as a polished 3D game model, 3/4 view, isolated on white.
+
+# --- residential ---
+glass condo tower 3D building model, balconies, modern residential high-rise
+red brick apartment block 3D building model, classic lowrise residential
+row of townhouses 3D building model, varied pastel facades
+suburban detached house 3D building model, garage, front lawn
+high-rise residential tower 3D building model, deep balconies, concrete and glass
+
+# --- commercial ---
+glass office tower 3D building model, corporate headquarters, plaza entrance
+shopping mall 3D building model, wide storefront facade, parking lot
+restaurant building 3D model, cozy exterior, signage band, awnings
+bank building 3D model, stone columns, formal entrance
+hotel tower 3D building model, grand lobby entrance, rooftop sign band
+
+# --- civic / cultural ---
+modern museum 3D building model, bold geometric form, public plaza
+public library 3D building model, glass reading rooms, welcoming entrance
+theater 3D building model, marquee sign, grand facade
+city hall 3D building model, civic architecture, flag poles
+school building 3D building model, classroom wings, playground side
+hospital building 3D building model, modern medical center, entrance canopy
+
+# --- infrastructure ---
+parking garage 3D building model, open concrete decks, ramp
+train station 3D building model, arched roof, platform canopy
+gas station 3D model, canopy roof, pump islands, convenience store

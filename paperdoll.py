@@ -77,9 +77,10 @@ def cmd_batch(args):
     pipe = SpritePipeline()
     prompts = load_prompts(Path(args.prompts))
     body_dir = Path(args.body_dir)
-    bodies = sorted(body_dir.glob("*.png"))
+    pattern = args.body_pattern or "*.png"
+    bodies = sorted(body_dir.glob(pattern))
     if not bodies:
-        print(f"no body PNGs in {body_dir}", file=sys.stderr)
+        print(f"no body PNGs matching {pattern} in {body_dir}", file=sys.stderr)
         sys.exit(1)
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -166,6 +167,8 @@ def main():
     b.add_argument("--directions", default="",
                    help="comma-separated direction tags, one per prompt index "
                         "(e.g. S,SE,E,NE,N,NW,W,SW for the 8 body prompts)")
+    b.add_argument("--body-pattern", default="",
+                   help="glob filter for body files (e.g. '*_s0.png' for seed 0 only)")
     b.add_argument("--out", required=True)
     b.set_defaults(fn=cmd_batch)
 

@@ -1,0 +1,14 @@
+# City street props — 3D MODEL (everplanet-like, finished quality)
+# Run:  python sprites.py --prompts prompts/city_streetprops.txt --style 3d --seeds 2 --size 768 --output ./city_sprites
+# The "3d" preset frames each as a polished 3D game model, 3/4 view, isolated on white.
+
+traffic light pole 3D model, vertical signal with red yellow green lights
+street lamp post 3D model, curved arm, warm glowing lamp
+stop sign 3D model, red octagon on metal pole
+street name sign pole 3D model, green sign blades
+wooden park bench 3D model
+bus stop shelter 3D model, glass panels, bench, roof
+red fire hydrant 3D model
+public trash bin 3D model, dark green metal
+bicycle rack 3D model, metal loops
+planter box with colorful flowers 3D model
