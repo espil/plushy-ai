@@ -84,10 +84,19 @@ def cmd_batch(args):
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest = []
+    # direction: from --directions list by prompt index (p{NN}_ prefix),
+    # else try "<name>_<DIR>_s<N>.png", else "S"
+    import re
+    directions = (args.directions.split(",") if args.directions else [])
     for body_path in bodies:
-        # direction tag = middle part of "<name>_<DIR>_s<N>.png", e.g. body_S_s0
         stem = body_path.stem
-        direction = stem.split("_")[-2] if "_" in stem else "S"
+        m = re.match(r"p(\d+)_", stem)
+        if m and directions:
+            direction = directions[int(m.group(1)) % len(directions)].strip()
+        elif "_" in stem:
+            direction = stem.split("_")[-2]
+        else:
+            direction = "S"
         body = Image.open(body_path).convert("RGBA")
         for pi, prompt in enumerate(prompts):
             for s in range(args.seeds):
@@ -154,6 +163,9 @@ def main():
     b.add_argument("--style", default="2.5d", choices=["default", "2.5d", "3d"])
     b.add_argument("--diff-thresh", type=int, default=28,
                    help="pixel-diff threshold for layer extraction")
+    b.add_argument("--directions", default="",
+                   help="comma-separated direction tags, one per prompt index "
+                        "(e.g. S,SE,E,NE,N,NW,W,SW for the 8 body prompts)")
     b.add_argument("--out", required=True)
     b.set_defaults(fn=cmd_batch)
 

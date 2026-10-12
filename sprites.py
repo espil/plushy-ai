@@ -85,13 +85,15 @@ def main():
     total = len(prompts) * args.seeds
     done = 0
     print(f"sprites: {len(prompts)} prompt(s) x {args.seeds} seed(s) -> {outdir}")
-    for prompt in prompts:
+    for pi, prompt in enumerate(prompts):
         for s in range(args.seeds):
             seed = args.seed + s
             slug = slugify(prompt)
-            name = f"{slug}_s{seed}.png" if args.seeds > 1 else f"{slug}.png"
+            # prompt index prefix: prompts sharing the first words (e.g. 8 body
+            # directions) must not overwrite each other
+            name = f"p{pi:02d}_{slug}_s{seed}.png" if args.seeds > 1 else f"p{pi:02d}_{slug}.png"
             dest = outdir / name
-            entry = {"prompt": prompt, "seed": seed, "file": name}
+            entry = {"prompt": prompt, "prompt_index": pi, "seed": seed, "file": name}
             if args.skip_existing and dest.exists():
                 entry["status"] = "skipped"
                 manifest.append(entry)
