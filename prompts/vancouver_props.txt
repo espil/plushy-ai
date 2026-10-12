@@ -1,14 +1,13 @@
-# Vancouver concept props — totem poles + pacific northwest forest
-# Run:  python sprites.py --prompts prompts/vancouver_props.txt --subject-type object --seeds 2 --size 768 --output ./city_sprites
-# One prompt per line. # = comment. The "object" preset frames each as a
-# single centered object, fully visible, isolated on white (billboard sprite).
+# Vancouver concept props — 3D MODEL remake (everplanet-like, finished quality)
+# Run:  python sprites.py --prompts prompts/vancouver_props.txt --style 3d --seeds 2 --size 768 --output ./city_sprites
+# The "3d" preset frames each as a polished 3D game model, 3/4 view, isolated on white.
 
 # --- totem poles (indigenous pacific northwest) ---
-tall cedar totem pole standing upright, full length visible from base to top, carved raven with spread wings on top, red and black paint
-tall cedar totem pole standing upright, full length visible, stacked bear and salmon figures, traditional formline carving
-tall welcome totem pole standing upright, full length visible from base to top, carved human figure with raised arms
+tall cedar totem pole 3D model, standing upright, carved raven with spread wings on top, red and black paint
+tall cedar totem pole 3D model, standing upright, stacked bear and salmon figures, traditional formline carving
+tall welcome totem pole 3D model, standing upright, carved human figure with raised arms
 
 # --- pacific northwest forest ---
-towering douglas fir tree, dense evergreen needles
-western red cedar tree, drooping branches, mossy trunk
-bigleaf maple tree, broad green canopy
+towering douglas fir tree 3D model, dense evergreen needles
+western red cedar tree 3D model, drooping branches, mossy trunk
+bigleaf maple tree 3D model, broad green canopy

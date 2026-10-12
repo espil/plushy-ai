@@ -46,6 +46,20 @@ ARCH_SUFFIX = (", architectural elevation, straight-on front view, flat facade, 
                "fully visible, nothing cut off, isolated on a solid pure white background, "
                "clean silhouette, sharp details")
 
+# 3D model style (everplanet-like): polished 3D game-model look for the city —
+# cute stylized 3D, three-quarter view showing volume, finished asset quality.
+# Replaces the subject suffix entirely (its own framing, not flat).
+STYLE_3D = (", polished 3D video game model, cute stylized 3D like everplanet buildings, "
+            "three-quarter view showing depth and volume, soft studio lighting, "
+            "vibrant colors, clean stylized geometry, finished game asset quality, "
+            "isolated on a solid pure white background, fully visible, nothing cut off")
+
+# Paper-doll "wear" suffix: img2img prompts that dress the blank body.
+# Keeps pose/proportions; only the described item is added.
+WEAR_SUFFIX = (", wearing this item, keep the exact same body pose, proportions and "
+               "camera angle, only add the described clothing or hair, "
+               "seamless game sprite, fully visible, nothing cut off")
+
 # 2.5D game style (pokemon sword/shield-like): stylized, bold readable
 # silhouettes, vibrant colors, soft cel-shading. Appended after the subject
 # suffix when style="2.5d".
@@ -68,7 +82,7 @@ class SpriteOptions:
     remove_background: bool = True
     sprite_style: bool = True          # append style suffix
     subject_type: str = "object"       # "object" -> SPRITE_SUFFIX, "building" -> ARCH_SUFFIX
-    style: str = "default"             # "2.5d" -> append STYLE_2_5D (pokemon SwSh-like)
+    style: str = "default"             # "2.5d" -> append STYLE_2_5D, "3d" -> STYLE_3D (replaces subject suffix)
     crisp_alpha: bool = True           # binarize alpha: kills semi-transparent fringes
 
 
@@ -103,12 +117,81 @@ class _MockSpriteBackend:
             progress(1.0, "mock sprite done")
         return img
 
+    def img2img(self, opts: SpriteOptions, init_image: "Image.Image",
+                strength: float = 0.6,
+                progress: Optional[ProgressCallback] = None) -> "Image.Image":
+        # mock: tint the init image so the pipeline is testable without GPU
+        from PIL import Image
+        if progress:
+            progress(0.5, "mock img2img")
+        img = init_image.convert("RGBA").copy()
+        tint = Image.new("RGBA", img.size, (255, 120, 120, 60))
+        img = Image.alpha_composite(img, tint)
+        if progress:
+            progress(1.0, "mock img2img done")
+        return img
+
 
 class _SDXLSpriteBackend:
     """stabilityai/sdxl-turbo text-to-image."""
 
     def __init__(self):
         self._pipe = None
+        self._i2i = None
+
+    def _load_i2i(self):
+        if self._i2i is not None:
+            return
+        import torch
+        log.info("loading img2img model %s ...", SPRITE_MODEL)
+        from diffusers import AutoPipelineForImage2Image
+        # stabilityai/sdxl-turbo is a gated model: the Hugging Face account
+        # must accept its license, and downloads need HF_TOKEN set.
+        import os
+        token = os.environ.get("HF_TOKEN") or None
+        pipe = AutoPipelineForImage2Image.from_pretrained(
+            SPRITE_MODEL,
+            torch_dtype=torch.float16 if DEVICE == "cuda" else torch.float32,
+            variant="fp16" if DEVICE == "cuda" else None,
+            token=token,
+        )
+        if DEVICE == "cuda":
+            pipe.to("cuda")
+            try:
+                pipe.enable_xformers_memory_efficient_attention()
+            except Exception:
+                pass
+        self._i2i = pipe
+        log.info("img2img model loaded")
+
+    def img2img(self, opts: SpriteOptions, init_image: "Image.Image",
+                strength: float = 0.6,
+                progress: Optional[ProgressCallback] = None) -> "Image.Image":
+        """Dress/edit an existing sprite: keeps structure, changes appearance.
+        strength 0.5-0.7 = keep pose, add item. Higher = more change."""
+        self._load_i2i()
+        import torch
+        from PIL import Image
+        prompt = opts.prompt + WEAR_SUFFIX
+        if progress:
+            progress(0.2, "wearing item")
+        gen = torch.Generator(device=DEVICE).manual_seed(opts.seed)
+        # img2img needs RGB on a solid background: composite over white
+        base = Image.new("RGB", init_image.size, (255, 255, 255))
+        base.paste(init_image.convert("RGBA"), mask=init_image.convert("RGBA").split()[3])
+        out = self._i2i(
+            prompt=prompt,
+            negative_prompt=opts.negative_prompt,
+            image=base,
+            strength=max(0.1, min(strength, 1.0)),
+            num_inference_steps=max(1, min(opts.num_inference_steps, 12)),
+            guidance_scale=opts.guidance_scale,
+            generator=gen,
+        )
+        img = out.images[0].convert("RGBA")
+        if progress:
+            progress(0.8, "item worn")
+        return img
 
     def load(self):
         if self._pipe is not None:
@@ -138,9 +221,12 @@ class _SDXLSpriteBackend:
                  progress: Optional[ProgressCallback] = None) -> "Image.Image":
         self.load()
         import torch
-        suffix = ARCH_SUFFIX if opts.subject_type == "building" else SPRITE_SUFFIX
-        if opts.style == "2.5d":
-            suffix += STYLE_2_5D
+        if opts.style == "3d":
+            suffix = STYLE_3D  # own framing (3/4 view), replaces subject suffix
+        else:
+            suffix = ARCH_SUFFIX if opts.subject_type == "building" else SPRITE_SUFFIX
+            if opts.style == "2.5d":
+                suffix += STYLE_2_5D
         prompt = opts.prompt + (suffix if opts.sprite_style else "")
         if progress:
             progress(0.2, "generating sprite")
@@ -253,6 +339,23 @@ class SpritePipeline:
         o = opts or SpriteOptions()
         o.prompt = prompt or o.prompt
         img = self._backend.generate(o, progress)
+        if o.remove_background and not MOCK:
+            if progress:
+                progress(0.9, "removing background")
+            img = remove_background_rgba(img, crisp=o.crisp_alpha)
+        if progress:
+            progress(1.0, "done")
+        return img
+
+    def img2img(self, prompt: str, init_image: "Image.Image",
+                strength: float = 0.6,
+                opts: Optional[SpriteOptions] = None,
+                progress: Optional[ProgressCallback] = None) -> "Image.Image":
+        """Paper-doll 'wear': dress the blank body (or edit a sprite).
+        Returns a transparent PNG (background removed unless mock)."""
+        o = opts or SpriteOptions()
+        o.prompt = prompt or o.prompt
+        img = self._backend.img2img(o, init_image, strength, progress)
         if o.remove_background and not MOCK:
             if progress:
                 progress(0.9, "removing background")

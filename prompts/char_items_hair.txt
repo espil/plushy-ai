@@ -1,0 +1,10 @@
+# Paper-doll HAIRSTYLES — worn onto the blank body via img2img
+# Run:  python paperdoll.py batch --body-dir ./paperdoll/bodies/female --prompts prompts/char_items_hair.txt --strength 0.6 --out ./paperdoll/layers/hair
+# Espil canon first (short pink bob, full bangs covering eyes), Lunaris second (ultra-long silver iridescent).
+
+short pink bob haircut with full bangs covering the eyes, Espil style
+ultra-long silver-white hair with subtle blue pink purple iridescence, Lunaris style
+short black undercut
+shoulder-length brown wavy hair
+long black ponytail
+messy ash-blonde short hair

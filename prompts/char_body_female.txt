@@ -1,0 +1,14 @@
+# Blank female body — 8 directions (paper-doll base, v1 remake per Han 2026-10-11)
+# Run:  python sprites.py --prompts prompts/char_body_female.txt --style 2.5d --seeds 1 --size 512 --output ./paperdoll/bodies/female
+# Then: pick the best seed per direction, rename to body_<DIR>.png (DIR = S SE E NE N NW W SW).
+# Keep these 8 as the CANONICAL body — all items are img2img'd onto them.
+# IMPORTANT: faceless, hairless, plain gray — items add the rest.
+
+blank faceless smooth light-gray female mannequin body, full body game character sprite, front view facing south, neutral standing pose, arms relaxed at sides, stylized 2.5D mannequin, isolated on solid white background, fully visible head to feet
+blank faceless smooth light-gray female mannequin body, full body game character sprite, three-quarter view facing south-east, neutral standing pose, arms relaxed at sides, stylized 2.5D mannequin, isolated on solid white background, fully visible head to feet
+blank faceless smooth light-gray female mannequin body, full body game character sprite, side view facing east, neutral standing pose, arms relaxed at sides, stylized 2.5D mannequin, isolated on solid white background, fully visible head to feet
+blank faceless smooth light-gray female mannequin body, full body game character sprite, three-quarter back view facing north-east, neutral standing pose, arms relaxed at sides, stylized 2.5D mannequin, isolated on solid white background, fully visible head to feet
+blank faceless smooth light-gray female mannequin body, full body game character sprite, back view facing north, neutral standing pose, arms relaxed at sides, stylized 2.5D mannequin, isolated on solid white background, fully visible head to feet
+blank faceless smooth light-gray female mannequin body, full body game character sprite, three-quarter back view facing north-west, neutral standing pose, arms relaxed at sides, stylized 2.5D mannequin, isolated on solid white background, fully visible head to feet
+blank faceless smooth light-gray female mannequin body, full body game character sprite, side view facing west, neutral standing pose, arms relaxed at sides, stylized 2.5D mannequin, isolated on solid white background, fully visible head to feet
+blank faceless smooth light-gray female mannequin body, full body game character sprite, three-quarter view facing south-west, neutral standing pose, arms relaxed at sides, stylized 2.5D mannequin, isolated on solid white background, fully visible head to feet

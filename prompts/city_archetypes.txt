@@ -1,21 +1,21 @@
-# City archetype facades — 5 types for the OSM facade pipeline (main chat, bd92006)
-# Run:  python sprites.py --prompts prompts/city_archetypes.txt --subject-type building --seeds 3 --size 768 --output ./city_sprites
-# Then: pick the best seed per archetype, rename to facade_{archetype}.png,
+# City archetype 3D models — 5 types for the OSM facade pipeline (main chat, bd92006)
+# Han 2026-10-11: everplanet-like polished 3D models, finished quality (remake).
+# Run:  python sprites.py --prompts prompts/city_archetypes.txt --style 3d --seeds 3 --size 768 --output ./city_sprites
+# Then: pick the best seed per archetype, rename to model_{archetype}.png,
 #       and drop into the game repo at assets/sprites/city/ (replaces placeholders).
-# Future variants: facade_{archetype}_{n}.png (hash-distributed by the game).
 # Styles follow Han's Vancouver concept: multicultural + indigenous + avant-garde + asphalt + PNW.
 
 # --- lowrise (12m+, ~49k buildings, 68% of 5km) — PRIORITY 1 ---
-multicultural lowrise mixed-use building, colorful retail storefronts on ground floor, apartments above, flat facade
+multicultural lowrise mixed-use building 3D model, colorful retail storefronts on ground floor, apartments above
 
 # --- house (~16.5k, 23%) — PRIORITY 2 ---
-pacific northwest craftsman bungalow house, cedar siding, wide front porch, low pitched roof
+pacific northwest craftsman bungalow house 3D model, cedar siding, wide front porch, low pitched roof
 
 # --- midrise (25m+, ~2.2k) ---
-modern asphalt-toned concrete midrise apartment block, minimalist grid facade, set-back balconies
+modern asphalt-toned concrete midrise apartment block 3D model, minimalist grid facade, set-back balconies
 
 # --- warehouse (under 12m, area 300m2+, ~2.7k) ---
-industrial warehouse building, corrugated metal facade, loading dock doors, flat roof
+industrial warehouse building 3D model, corrugated metal walls, loading dock doors, flat roof
 
 # --- tower (60m+, 131 buildings) ---
-avant-garde twisted glass tower, spiraling futuristic facade, city landmark
+avant-garde twisted glass tower 3D building model, spiraling futuristic facade, city landmark

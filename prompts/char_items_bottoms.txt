@@ -1,0 +1,8 @@
+# Paper-doll BOTTOMS — worn onto the blank body via img2img
+# Run:  python paperdoll.py batch --body-dir ./paperdoll/bodies/male --prompts prompts/char_items_bottoms.txt --strength 0.6 --out ./paperdoll/layers/bottoms
+
+dark cargo pants with side pockets
+blue jeans, straight fit
+a pleated school skirt
+black wide-leg trousers
+khaki chinos

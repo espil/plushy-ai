@@ -1,28 +1,29 @@
-# Vancouver concept — multicultural + indigenous + avant-garde new city
-# Run:  python sprites.py --prompts prompts/vancouver_buildings.txt --subject-type building --seeds 2 --size 768 --output ./city_sprites
-# One prompt per line. # = comment. The "building" preset frames each as:
-# straight-on front elevation, flat facade, fully visible (billboard sprite).
+# Vancouver concept — 3D MODEL remake (everplanet-like, finished quality)
+# Han 2026-10-11: city must be 2.5D everplanet-like 3D models, finished products.
+# Run:  python sprites.py --prompts prompts/vancouver_buildings.txt --style 3d --seeds 2 --size 768 --output ./city_sprites
+# The "3d" preset frames each as a polished 3D game model, 3/4 view, isolated on white.
+# Subjects follow Han's Vancouver concept: multicultural + indigenous + avant-garde + asphalt.
 
 # --- avant-garde new city ---
-twisted glass tower, spiraling futuristic facade, new city landmark
-parametric cultural center, flowing curved white facade, organic architecture
-cantilevered art gallery, bold stacked geometric volumes
-sail-shaped waterfront pavilion, white fabric sails, glass and timber base
+twisted glass tower 3D building model, spiraling futuristic facade, new city landmark
+parametric cultural center 3D building model, flowing curved white facade, organic architecture
+cantilevered art gallery 3D building model, bold stacked geometric volumes
+sail-shaped waterfront pavilion 3D model, white fabric sails, glass and timber base
 
 # --- modern asphalt / concrete ---
-dark asphalt-toned concrete office block, minimalist grid facade
-brutalist residential tower, raw concrete, deep-set balconies
-monolithic black steel commercial building, sharp angular form
+dark asphalt-toned concrete office block 3D building model, minimalist grid facade
+brutalist residential tower 3D building model, raw concrete, deep-set balconies
+monolithic black steel commercial building 3D model, sharp angular form
 
 # --- multicultural street ---
-historic chinatown shophouse, ornate balconies, decorative cornice
-punjabi market hall, vibrant colored storefronts, arched entry
-modern community hall with white dome, geometric facade details
+historic chinatown shophouse 3D building model, ornate balconies, decorative cornice
+punjabi market hall 3D building model, vibrant colored storefronts, arched entry
+modern community hall 3D building model with white dome, geometric facade details
 
 # --- indigenous / pacific northwest ---
-long rectangular cedar longhouse building, full exterior view, wide low pitched roof, cultural center
-cedar plank community hall, totem entrance posts, wide low roofline
+long rectangular cedar longhouse 3D building model, wide low pitched roof, cultural center
+cedar plank community hall 3D building model, totem entrance posts, wide low roofline
 
 # --- robson & gastown (future real-store corridors; placeholders until real stores are built) ---
-victorian heritage retail block, ornate brick facades, vintage cornices, gastown street
-luxury shopping street building, modern glass retail podium, flagship storefronts, robson street
+victorian heritage retail block 3D building model, ornate brick facades, vintage cornices, gastown street
+luxury shopping street building 3D model, modern glass retail podium, flagship storefronts, robson street

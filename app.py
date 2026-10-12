@@ -120,7 +120,7 @@ class SpriteRequest(BaseModel):
     size: int = Field(512, description="square size in px (64-1024)")
     steps: int = Field(4, description="inference steps (SDXL-Turbo: 1-4)")
     negative_prompt: Optional[str] = Field(None, description="overrides the default negative prompt")
-    style: str = Field("default", description="art style preset: default | 2.5d")
+    style: str = Field("default", description="art style preset: default | 2.5d | 3d")
 
 
 def _job_to_response(job: Job) -> StatusResponse:
@@ -262,7 +262,7 @@ async def sprite(req: SpriteRequest):
         size=max(64, min(req.size, 1024)),
         steps=max(1, min(req.steps, 12)),
         negative_prompt=req.negative_prompt,
-        style=req.style if req.style in ("default", "2.5d") else "default",
+        style=req.style if req.style in ("default", "2.5d", "3d") else "default",
     )
     await job_queue.put(job_id)
     log.info("enqueued sprite job %s (queue depth %d)", job_id, job_queue.qsize())
