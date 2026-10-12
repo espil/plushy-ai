@@ -6,6 +6,7 @@ ready as billboard sprites in a game engine. No cloud, your GPU.
 
 Endpoints:
   POST /api/sprite        → 202 + job_id (JSON: prompt, seed, size, steps)
+  POST /api/img2img       → 202 + job_id (multipart: image + prompt + strength)
   GET  /api/status/{job_id}
   GET  /api/result/{job_id} → download the transparent .PNG
   DELETE /api/job/{job_id}  → cancel / delete job
@@ -36,7 +37,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
@@ -69,6 +70,9 @@ class Job:
     steps: int = 4
     negative_prompt: Optional[str] = None
     style: str = "default"
+    mode: str = "t2i"                      # "t2i" | "i2i"
+    init_image: Optional[Path] = None      # uploaded base image (i2i)
+    strength: float = 0.6                  # img2img strength (i2i)
     status: JobStatus = JobStatus.QUEUED
     progress: float = 0.0
     message: str = "queued"
@@ -174,9 +178,21 @@ async def _worker(worker_id: int):
             dest = OUTPUT_DIR / f"{job_id}.sprite.png"
             t0 = time.time()
             loop = asyncio.get_running_loop()
-            await loop.run_in_executor(
-                None, pipe.generate_to_file,
-                job.prompt, dest, sopts, _progress)
+            if job.mode == "i2i" and job.init_image is not None:
+                from PIL import Image
+                init = Image.open(job.init_image).convert("RGBA")
+                # SDXL wants multiples of 8
+                w = max(64, init.width // 8 * 8)
+                h = max(64, init.height // 8 * 8)
+                if (w, h) != init.size:
+                    init = init.resize((w, h))
+                await loop.run_in_executor(
+                    None, pipe.img2img_to_file,
+                    job.prompt, init, dest, job.strength, sopts, _progress)
+            else:
+                await loop.run_in_executor(
+                    None, pipe.generate_to_file,
+                    job.prompt, dest, sopts, _progress)
             job.result_path = dest
             job.status = JobStatus.COMPLETED
             job.progress = 1.0
@@ -272,6 +288,41 @@ async def sprite(req: SpriteRequest):
         poll_url=f"/api/status/{job_id}",
         message=f"sprite job queued at position {job_queue.qsize()}",
     )
+
+
+@app.post("/api/img2img", status_code=202, response_model=GenerateResponse)
+async def create_img2img(
+    image: UploadFile = File(...),
+    prompt: str = Form(...),
+    seed: int = Form(0),
+    steps: int = Form(6),
+    strength: float = Form(0.6),
+    style: str = Form("default"),
+    negative_prompt: Optional[str] = Form(None),
+):
+    """Upload a base image + prompt -> img2img (e.g. dress a blank body)."""
+    job_id = uuid.uuid4().hex[:12]
+    upload_dir = OUTPUT_DIR / "uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    init_path = upload_dir / f"{job_id}_init.png"
+    data = await image.read()
+    if len(data) > 20 * 1024 * 1024:
+        raise HTTPException(413, "image too large (max 20MB)")
+    init_path.write_bytes(data)
+    jobs[job_id] = Job(
+        job_id=job_id,
+        prompt=prompt.strip(),
+        seed=seed,
+        size=512,
+        steps=max(1, min(steps, 12)),
+        negative_prompt=negative_prompt,
+        style=style if style in ("default", "2.5d", "3d", "chibi") else "default",
+        mode="i2i",
+        init_image=init_path,
+        strength=max(0.1, min(strength, 1.0)),
+    )
+    await job_queue.put(job_id)
+    return GenerateResponse(job_id=job_id, status=JobStatus.QUEUED, poll_url=f"/api/status/{job_id}")
 
 
 @app.get("/api/status/{job_id}", response_model=StatusResponse)

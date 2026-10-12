@@ -186,14 +186,22 @@ class _SDXLSpriteBackend:
         # img2img needs RGB on a solid background: composite over white
         base = Image.new("RGB", init_image.size, (255, 255, 255))
         base.paste(init_image.convert("RGBA"), mask=init_image.convert("RGBA").split()[3])
+        steps = max(1, min(opts.num_inference_steps, 12))
+
+        def _step_cb2(pipe, i, ts, kwargs):
+            if progress:
+                progress(0.2 + 0.6 * (i + 1) / steps, f"step {i + 1}/{steps}")
+            return kwargs
+
         out = self._i2i(
             prompt=prompt,
             negative_prompt=opts.negative_prompt,
             image=base,
             strength=max(0.1, min(strength, 1.0)),
-            num_inference_steps=max(1, min(opts.num_inference_steps, 12)),
+            num_inference_steps=steps,
             guidance_scale=opts.guidance_scale,
             generator=gen,
+            callback_on_step_end=_step_cb2,
         )
         img = out.images[0].convert("RGBA")
         if progress:
@@ -240,14 +248,22 @@ class _SDXLSpriteBackend:
         if progress:
             progress(0.2, "generating sprite")
         gen = torch.Generator(device=DEVICE).manual_seed(opts.seed)
+        steps = max(1, min(opts.num_inference_steps, 12))
+
+        def _step_cb(pipe, i, ts, kwargs):
+            if progress:
+                progress(0.2 + 0.6 * (i + 1) / steps, f"step {i + 1}/{steps}")
+            return kwargs
+
         out = self._pipe(
             prompt=prompt,
             negative_prompt=opts.negative_prompt,
             width=opts.width,
             height=opts.height,
-            num_inference_steps=max(1, min(opts.num_inference_steps, 12)),
+            num_inference_steps=steps,
             guidance_scale=opts.guidance_scale,
             generator=gen,
+            callback_on_step_end=_step_cb,
         )
         img = out.images[0].convert("RGBA")
         if progress:
@@ -372,6 +388,16 @@ class SpritePipeline:
         if progress:
             progress(1.0, "done")
         return img
+
+    def img2img_to_file(self, prompt: str, init_image: "Image.Image", dest: Path,
+                        strength: float = 0.6,
+                        opts: Optional[SpriteOptions] = None,
+                        progress: Optional[ProgressCallback] = None) -> Path:
+        img = self.img2img(prompt, init_image, strength, opts, progress)
+        dest = Path(dest)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        img.save(dest, "PNG")
+        return dest
 
     def generate_to_file(self, prompt: str, dest: Path,
                          opts: Optional[SpriteOptions] = None,

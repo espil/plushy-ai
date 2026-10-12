@@ -39,9 +39,11 @@
   #gallery img { width: 100%; aspect-ratio: 1; object-fit: contain; display: block; }
   #gallery figcaption { padding: .5rem .7rem; font-size: .8rem; color: #aaa;
           display: flex; justify-content: space-between; align-items: center; }
-  #gallery figcaption a { color: #7ab; text-decoration: none; border: 1px solid #444;
-          border-radius: 6px; padding: .25rem .6rem; }
-  #gallery figcaption a:hover { background: #2a2a2a; }
+  #gallery figcaption a { color: #fff; background: #2563eb; text-decoration: none;
+          border-radius: 6px; padding: .45rem .9rem; font-weight: 600; }
+  #gallery figcaption a:hover { background: #1d4ed8; }
+  #imgPreview { max-width: 160px; max-height: 160px; display: none; border-radius: 8px;
+          border: 1px solid #444; margin-top: .4rem; }
   .empty { color: #666; font-size: .9rem; }
   .note { color: #777; font-size: .8rem; margin-top: 1rem; }
 </style>
@@ -55,6 +57,13 @@
   </label>
   <label class="full" style="margin-top:.6rem">Negative prompt <span style="color:#666">(empty = use default)</span>
     <textarea id="negative" placeholder="default: blurry, watermark, text, cropped, multiple objects, dark, silhouette, black background, gloomy, night"></textarea>
+  </label>
+  <label class="full" style="margin-top:.6rem">Base image <span style="color:#666">(optional — if set, img2img: e.g. dress a blank body)</span>
+    <input type="file" id="imgFile" accept="image/*">
+    <img id="imgPreview" alt="base image preview">
+  </label>
+  <label id="strengthRow" class="full" style="margin-top:.4rem; display:none">img2img strength <span id="strengthVal">0.6</span>
+    <input type="range" id="strength" min="0.1" max="1" step="0.05" value="0.6" style="width:100%">
   </label>
   <div class="row">
     <label>Size
@@ -113,6 +122,21 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function showError(msg) { $('error').textContent = msg; }
 function clearError() { $('error').textContent = ''; }
 
+$('imgFile').addEventListener('change', () => {
+  const f = $('imgFile').files[0];
+  if (f) {
+    $('imgPreview').src = URL.createObjectURL(f);
+    $('imgPreview').style.display = 'block';
+    $('strengthRow').style.display = 'block';
+  } else {
+    $('imgPreview').style.display = 'none';
+    $('strengthRow').style.display = 'none';
+  }
+});
+$('strength').addEventListener('input', () => {
+  $('strengthVal').textContent = $('strength').value;
+});
+
 $('go').addEventListener('click', async () => {
   clearError();
   const prompt = $('prompt').value.trim();
@@ -123,17 +147,19 @@ $('go').addEventListener('click', async () => {
   const steps = parseInt($('steps').value);
   const negative = $('negative').value.trim();
   const style = $('style').value;
+  const imgFile = $('imgFile').files[0] || null;
+  const strength = parseFloat($('strength').value);
 
   $('go').disabled = true;
   const runs = [];
   for (let i = 0; i < count; i++) {
-    runs.push(runJob(prompt, baseSeed + i, size, steps, negative, style));
+    runs.push(runJob(prompt, baseSeed + i, size, steps, negative, style, imgFile, strength));
   }
   await Promise.allSettled(runs);
   $('go').disabled = false;
 });
 
-async function runJob(prompt, seed, size, steps, negative, style) {
+async function runJob(prompt, seed, size, steps, negative, style, imgFile, strength) {
   const card = document.createElement('div');
   card.className = 'jobcard';
   const label = document.createElement('div');
@@ -150,14 +176,27 @@ async function runJob(prompt, seed, size, steps, negative, style) {
   $('jobs').prepend(card);
 
   try {
-    const r = await fetch('/api/sprite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt, seed, size, steps, style,
-        negative_prompt: negative || null,
-      }),
-    });
+    let r;
+    if (imgFile) {
+      const fd = new FormData();
+      fd.append('image', imgFile);
+      fd.append('prompt', prompt);
+      fd.append('seed', seed);
+      fd.append('steps', steps);
+      fd.append('strength', strength);
+      fd.append('style', style);
+      if (negative) fd.append('negative_prompt', negative);
+      r = await fetch('/api/img2img', { method: 'POST', body: fd });
+    } else {
+      r = await fetch('/api/sprite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt, seed, size, steps, style,
+          negative_prompt: negative || null,
+        }),
+      });
+    }
     if (!r.ok) {
       const t = await r.text();
       throw new Error('request failed: HTTP ' + r.status + ' ' + t.slice(0, 200));

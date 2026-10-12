@@ -40,7 +40,4 @@ RUN mkdir -p outputs city_sprites paperdoll
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
-  CMD curl -f http://localhost:8000/health || exit 1
-
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
