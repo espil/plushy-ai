@@ -27,9 +27,12 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # --- app code ---
-COPY app.py pipeline_sprite.py sprites.py ./
+# (The run commands mount the repo over /app, so git pull alone updates code.
+#  These COPYs are fallback for running without the mount.)
+COPY *.py ./
+COPY prompts/ ./prompts/
 COPY static/ ./static/
-RUN mkdir -p outputs
+RUN mkdir -p outputs city_sprites paperdoll
 
 # Model weights (SDXL-Turbo) download at runtime on first generation.
 # Cached in /root/.cache/huggingface — mount a volume to keep them:
