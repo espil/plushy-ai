@@ -222,6 +222,42 @@ async function runJob(prompt, seed, size, steps, negative, style, imgFile, stren
   }
 }
 
+// On load, pull sprites already on the server's disk into the gallery —
+// so a refresh, or opening this page from another PC, still shows them.
+async function loadExisting() {
+  try {
+    const r = await fetch('/api/outputs');
+    if (!r.ok) return;
+    const { outputs } = await r.json();
+    for (const o of outputs.slice().reverse()) {
+      addToGalleryUrl(o.url, o.name.replace(/\.sprite\.png$/, ''), o.name);
+    }
+  } catch (e) { /* gallery just stays empty */ }
+}
+
+function addToGalleryUrl(url, job_id, label) {
+  const empty = document.querySelector('#gallery .empty');
+  if (empty) empty.remove();
+  const fig = document.createElement('figure');
+  const img = document.createElement('img');
+  img.src = url;
+  img.alt = label || '';
+  img.className = 'checker';
+  const cap = document.createElement('figcaption');
+  const span = document.createElement('span');
+  span.textContent = label || '';
+  span.style.overflow = 'hidden'; span.style.textOverflow = 'ellipsis';
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = label || 'plushy-sprite.png';
+  a.textContent = 'download';
+  cap.append(span, a);
+  fig.append(img, cap);
+  $('gallery').prepend(fig);
+}
+
+loadExisting();
+
 function addToGallery(blob, job_id, seed) {
   const empty = document.querySelector('#gallery .empty');
   if (empty) empty.remove();

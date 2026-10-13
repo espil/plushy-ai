@@ -54,12 +54,28 @@ You get PNGs + `manifest.json` (prompt, seed, file per entry).
 
 ## 4. Web UI
 
+Easiest: double-click `start-gui.bat` (builds the image on first run,
+mounts `outputs/`, opens the Studio). Or manually:
+
 ```powershell
-docker run --rm --gpus all -p 8000:8000 -v plushy-hf:/root/.cache/huggingface plushy-ai
+docker run --rm --gpus all -p 8000:8000 -v "${PWD}/outputs:/app/outputs" -v plushy-hf:/root/.cache/huggingface plushy-ai
 ```
 
 Open http://localhost:8000/studio — type a prompt, watch progress,
-download the PNG.
+download the PNG. Mounting `outputs/` matters: without it the PNGs die
+with the container (`--rm`).
+
+**View from another PC (same LAN):** the server already binds
+0.0.0.0 (Dockerfile CMD), so open `http://<GPU PC's LAN IP>:8000/studio`
+on the second PC — `start-gui.bat` prints that address. The Studio
+gallery loads everything already in `outputs/` (via `GET /api/outputs`),
+so past generations are visible there too, not just the current
+session's. If it won't connect, allow port 8000 / Docker Desktop
+through Windows Firewall (Private network) on the GPU PC.
+
+Note: `start.bat` is the *mock* launcher — it forces
+`PLUSHY_MOCK=1`, so it only ever produces checkerboard placeholders.
+For real sprites use `start-gui.bat` / Docker above.
 
 ## Troubleshooting
 

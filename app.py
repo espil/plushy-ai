@@ -9,6 +9,8 @@ Endpoints:
   POST /api/img2img       → 202 + job_id (multipart: image + prompt + strength)
   GET  /api/status/{job_id}
   GET  /api/result/{job_id} → download the transparent .PNG
+  GET  /api/outputs          → list sprites already on disk (newest first)
+  GET  /api/outputs/{name}   → download one existing output PNG
   DELETE /api/job/{job_id}  → cancel / delete job
   GET  /health              → liveness
   GET  /studio              → web UI
@@ -363,6 +365,40 @@ async def delete_job(job_id: str):
         pass
     jobs.pop(job_id, None)
     return JSONResponse({"job_id": job_id, "deleted": True})
+
+
+@app.get("/api/outputs")
+async def list_outputs():
+    """List every sprite already on disk (newest first).
+
+    The Studio gallery is in-browser memory only, so without this a
+    refresh — or opening /studio from a second PC — shows nothing even
+    though the PNGs are sitting in outputs/. This is what makes past
+    generations viewable from another machine on the LAN.
+    """
+    items = []
+    for p in sorted(OUTPUT_DIR.glob("*.png"),
+                    key=lambda f: f.stat().st_mtime, reverse=True):
+        st = p.stat()
+        items.append({
+            "name": p.name,
+            "url": f"/api/outputs/{p.name}",
+            "size_bytes": st.st_size,
+            "mtime": int(st.st_mtime),
+        })
+    return {"count": len(items), "outputs": items}
+
+
+@app.get("/api/outputs/{name}")
+async def get_output(name: str):
+    # Path(name).name strips any directory part — no traversal out of outputs/.
+    safe = Path(name).name
+    if safe != name or not safe.endswith(".png"):
+        raise HTTPException(400, "bad file name")
+    path = OUTPUT_DIR / safe
+    if not path.exists():
+        raise HTTPException(404, "no such output")
+    return FileResponse(path, media_type="image/png", filename=safe)
 
 
 @app.get("/studio")
