@@ -1,0 +1,18 @@
+# Tokyo concept props — 3D MODEL (everplanet-like, finished quality)
+# Run:  python sprites.py --prompts prompts/tokyo_props.txt --style 3d --seeds 2 --size 768 --output ./tokyo_sprites
+# The "3d" preset frames each as a polished 3D game model, 3/4 view, isolated on white.
+
+# --- shrine / temple ---
+vermillion torii gate 3D model, traditional japanese shrine gate
+stone lantern 3D model, carved granite toro, temple garden
+paper lantern pole 3D model, glowing chochin lantern
+
+# --- nature ---
+sakura cherry blossom tree 3D model, full pink bloom canopy
+japanese black pine tree 3D model, sculpted branches
+ginkgo tree 3D model, golden fan-shaped leaves
+
+# --- street icons ---
+glowing vending machine 3D model, colorful drink display
+utility pole 3D model, tangled overhead power lines, tokyo street icon
+wooden bench with bamboo fence 3D model, japanese garden style

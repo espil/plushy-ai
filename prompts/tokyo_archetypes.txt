@@ -1,0 +1,20 @@
+# Tokyo archetype 3D models — 5 types for the OSM model pipeline
+# Run:  python sprites.py --prompts prompts/tokyo_archetypes.txt --style 3d --seeds 3 --size 768 --output ./tokyo_sprites
+# Then: pick the best seed per archetype, rename to model_{archetype}_tokyo.png,
+#       and drop into the game repo at assets/sprites/city/.
+# Styles follow the Tokyo concept: neon downtown + dense residential + traditional.
+
+# --- lowrise (PRIORITY 1) ---
+tokyo lowrise mixed-use building 3D model, small colorful shops on ground floor, apartments above, signage bands
+
+# --- house (PRIORITY 2) ---
+narrow tokyo house 3D model, slim modern design, small front garden
+
+# --- midrise ---
+tokyo midrise office block 3D model, glass and tile facade, vertical sign band
+
+# --- warehouse ---
+tokyo logistics warehouse 3D model, metal siding, loading bays, compact urban site
+
+# --- tower ---
+shinjuku style skyscraper 3D building model, glass curtain wall, dense downtown tower

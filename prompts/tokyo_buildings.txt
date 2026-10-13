@@ -1,0 +1,32 @@
+# Tokyo concept — 3D MODEL (everplanet-like, finished quality)
+# Run:  python sprites.py --prompts prompts/tokyo_buildings.txt --style 3d --seeds 2 --size 768 --output ./tokyo_sprites
+# The "3d" preset frames each as a polished 3D game model, 3/4 view, isolated on white.
+# Tokyo concept: neon downtown + dense residential + traditional shrines/temples + landmarks.
+
+# --- neon downtown (shibuya / shinjuku / akihabara) ---
+neon-lit shopping building 3D model, colorful LED billboard panels, shibuya style
+modern office skyscraper 3D building model, glass curtain wall, shinjuku business district
+pachinko parlor 3D building model, bright flashy signage, colorful facade
+electronics store 3D building model, colorful anime poster billboards, akihabara style
+capsule hotel 3D building model, rows of small round windows
+karaoke building 3D model, playful rounded facade, music sign band
+convenience store 3D building model, bright glowing storefront, konbini
+
+# --- residential ---
+tokyo apartment block 3D building model, danchi style, uniform balconies
+narrow modern tokyo house 3D model, tall slim design house, kyosho jutaku
+wooden machiya townhouse 3D model, traditional japanese merchant house, lattice front
+detached suburban house 3D model, small garden, tiled roof
+
+# --- traditional ---
+japanese shrine 3D building model, vermillion accents, curved tiled roof, shinto style
+buddhist temple 3D building model, grand tiled roof, wooden hall
+traditional ryokan inn 3D building model, wooden facade, noren curtains
+
+# --- landmarks ---
+red and white lattice communications tower 3D model, tokyo landmark
+tall lattice broadcast tower 3D model, tapered spire, tokyo landmark
+
+# --- infrastructure ---
+elevated train station 3D building model, platform canopy, urban rail
+modern office building 3D model, signage bands, salaryman district
