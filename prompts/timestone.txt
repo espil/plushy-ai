@@ -1,0 +1,14 @@
+# Time Stone - final asset source images (Plushy AI, 2D -> Zealandia pipeline builds 3D)
+# Spec: ~/workspace/goals/zealandia-game-project/files/zealandia-timemachine-quest-spec.md
+# Run:  python sprites.py --prompts prompts/timestone.txt --style 3d --seeds 3 --size 768 --output ./timestone_sprites
+# Brief lock: ancient standing stone, carved ring + rune cuts, teal-cyan glowing core
+# visible through the cuts, ~2.2 m tall, old and futuristic at once, an artifact
+# (not a machine). Must read at a distance in daylight and glow at night.
+# Replacement contract (measured from timestone_placeholder.glb):
+# node name "timestone", ground pivot at origin, stone 2.2 m tall,
+# footprint ~1.0 x 0.93 m on a ~1.6 m base disc, core emissive teal (0.05, 0.85, 0.75).
+
+ancient standing stone 3D model, carved ring around its upper body, glowing teal cyan core shining through rune cuts
+ancient monolith stone 3D model, tall and slightly tapered, engraved circular ring and rune lines, teal light glowing from inside the carvings
+weathered standing stone artifact 3D model, carved ring band with ancient runes, bright cyan-teal energy core visible through cracks
+futuristic ancient stone pillar 3D model, smooth dark stone, carved glowing ring, rune cuts emitting teal cyan light
