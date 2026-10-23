@@ -1,0 +1,18 @@
+# Zealandia town facilities - PROPS, straight-on FRONT view, no background
+# Han order 2026-10-23: alchemy table, simple teleporter. (The cooking
+# contest hearth sits in zealandia_facilities_buildings.txt as a structure.)
+# FRONT VIEW ONLY: every prompt below carries "straight-on front view"
+# itself, and the run uses the default object subject type. Do NOT use
+# --style 3d - it forces a three-quarter view, which Han ruled out.
+# Background is removed by rembg, so outputs are transparent PNGs.
+# Run:  python sprites.py --prompts prompts/zealandia_facilities_props.txt --style 2.5d --seeds 2 --size 768 --output ./zealandia_facilities_props
+
+# --- alchemy table (연금술 테이블) ---
+alchemy work table, straight-on front view, wooden table with colorful potion flasks, a bubbling retort, stacked old books, a candle and herb bundles, cute stylized fantasy game prop, single object
+fantasy alchemy table, straight-on front view, sturdy wooden desk with glowing green and purple elixir bottles, distillation glassware, an open spell book and a small cauldron, cute stylized fantasy game prop, single object
+cozy alchemist table, straight-on front view, wooden table with round potion bottles, a mortar and pestle, hanging dried herbs, crystal shards, warm candlelight, cute stylized fantasy game prop, single object
+
+# --- simple teleporter (간이 텔레포터) ---
+simple teleporter pad, straight-on front view, small round stone platform with glowing teal rune circle, two short stone pillars with a floating crystal between them, cute stylized fantasy game prop, single object
+fantasy teleport device, straight-on front view, compact metal and stone portal ring standing on a round base, glowing cyan runes, floating crystal core, cute stylized fantasy game prop, single object
+small village teleporter, straight-on front view, carved stone arch mini portal on a stepped round platform, glowing blue portal light inside the arch, rune engravings, cute stylized fantasy game prop, single object

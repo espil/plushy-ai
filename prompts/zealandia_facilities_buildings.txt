@@ -1,0 +1,27 @@
+# Zealandia town facilities - BUILDINGS, straight-on FRONT view, no background
+# Han order 2026-10-23: blacksmith, cooking contest place (hearth), bank, exchange.
+# FRONT VIEW ONLY: run with --subject-type building (appends the straight-on
+# front-elevation suffix) and --style 2.5d. Do NOT use --style 3d here -
+# the 3d preset forces a three-quarter view, which Han explicitly ruled out.
+# Background is removed by rembg, so outputs are transparent PNGs.
+# Run:  python sprites.py --prompts prompts/zealandia_facilities_buildings.txt --subject-type building --style 2.5d --seeds 2 --size 768 --output ./zealandia_facilities_buildings
+
+# --- blacksmith (대장간) ---
+fantasy blacksmith forge building, stone chimney with a glowing forge hearth visible through the front opening, heavy wooden door, hanging anvil sign, dark shingled roof, barrels and a water trough beside the entrance, cute stylized fantasy village game building
+medieval blacksmith workshop building, wide front chimney stack, open forge window with warm orange fire glow, horseshoe emblem over the door, timber frame walls, stone foundation, weapon rack by the front wall, cute stylized fantasy game building
+cozy village smithy building, slanted tile roof, brick forge chimney, round wooden door, glowing furnace doorway, crates and an anvil in front, cute stylized fantasy game building
+
+# --- cooking contest place (요리대결장소 - 화덕) ---
+outdoor cooking contest hearth pavilion, large stone fire hearth with a wide chimney hood, hanging cooking pots and a stew cauldron over the fire, open front pavilion roof on wooden posts, contest banner flags, cute stylized fantasy game structure
+fantasy cooking duel arena hearth structure, big round stone oven with open fire mouth, chimney pipe, cooking stations with pots and ingredient crates on both sides, festive bunting flags overhead, cute stylized fantasy game structure
+village festival cooking place, stone hearth with a copper hood and chimney, cauldrons and frying pans hanging in front, long wooden prep tables, warm fire glow, cute stylized fantasy game structure
+
+# --- bank (은행) ---
+fantasy village bank building, sturdy stone walls, grand front columns, round golden vault door in the center, gold coin emblem over the entrance, barred windows, elegant tiled roof, cute stylized fantasy game building
+grand bank building, marble front steps and pillars, large circular gold door, coin and key emblem on the pediment, secure iron-barred windows, slate roof, cute stylized fantasy game building
+cozy but solid bank building, thick stone facade, golden dome accent, round vault window with gold bars, money bag emblem sign, wooden double door, cute stylized fantasy game building
+
+# --- exchange (거래소) ---
+fantasy exchange market hall building, grand open front with striped awnings, balance scale emblem over the entrance, merchant stalls built into the front, coin banners, wide tiled roof, cute stylized fantasy game building in the everplanet hermenia style
+grand trading exchange building, arched front colonnade, golden scale and coin emblem, notice boards and goods crates by the entrance, red and cream awning stripes, cute stylized fantasy game building
+elegant market exchange hall, tall front archway, hanging trade sign with a balance scale, display windows with goods, stone and timber facade, festive pennant flags, cute stylized fantasy game building
