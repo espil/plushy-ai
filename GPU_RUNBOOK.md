@@ -104,3 +104,4 @@ Repeat with the other prompt files and commands from the production pack.
 | New prompt file is missing in a one-off Docker run | Mount the repo with `-v "${PWD}:/app"` as in section 5, or rebuild the image |
 | New files do not appear in outputs | Confirm the launcher printed the expected local output folder and that the batch used the same folder |
 | Blank or white sprite | Keep the prompt concrete, for example "a pine tree" or "a red fire hydrant" |
+| A job stays in processing | First run downloads the gated SDXL-Turbo model (~7 GB) plus the rembg model: watch the launcher console for `loading sprite model` and download progress, and check GPU use in Task Manager. If the log shows 401/gated, stop the launcher, set `HF_TOKEN` in PowerShell (`$env:HF_TOKEN = "..."`), and start again - the launcher forwards it to the container. |

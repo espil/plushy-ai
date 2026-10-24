@@ -53,6 +53,14 @@ if defined PLUSHY_OUTPUT_DIR (
 if not exist "%HOST_OUTPUT_DIR%" mkdir "%HOST_OUTPUT_DIR%"
 echo [3/4] Output folder: %HOST_OUTPUT_DIR%
 
+if defined HF_TOKEN (
+    echo [4/4] HF_TOKEN found on this PC - it will be passed to the container.
+) else (
+    echo [4/4] NOTE: HF_TOKEN is not set on this PC. The first-ever run needs it
+    echo       to download the gated SDXL-Turbo model. If jobs stay in
+    echo       "processing" with a 401/gated error in the log below, stop this
+    echo       window, set HF_TOKEN in PowerShell, and run start-gui.bat again.
+)
 echo [4/4] Starting Plushy AI Studio on port 8000 for this PC and the LAN...
 echo.
 echo   On this PC:    http://localhost:8000/studio
@@ -64,7 +72,7 @@ echo   Press CTRL+C here to stop the server.
 echo.
 timeout /t 3 >nul
 start http://localhost:8000/studio
-docker run --rm --name plushy-gui --gpus all -p 0.0.0.0:8000:8000 -e PLUSHY_OUTPUT_DIR=/app/outputs -v "%CD%:/app" -v "%HOST_OUTPUT_DIR%:/app/outputs" -v plushy-hf:/root/.cache/huggingface plushy-ai
+docker run --rm --name plushy-gui --gpus all -p 0.0.0.0:8000:8000 -e PLUSHY_OUTPUT_DIR=/app/outputs -e HF_TOKEN -v "%CD%:/app" -v "%HOST_OUTPUT_DIR%:/app/outputs" -v plushy-hf:/root/.cache/huggingface plushy-ai
 echo.
 echo Server stopped.
 pause
