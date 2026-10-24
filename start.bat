@@ -47,14 +47,17 @@ if errorlevel 1 (
 )
 
 set PLUSHY_MOCK=1
-echo [4/4] Starting Plushy AI...
+if not defined PLUSHY_OUTPUT_DIR set PLUSHY_OUTPUT_DIR=%CD%\outputs
+echo [4/4] Starting Plushy AI on this PC and the local network...
 echo.
-echo   Opening http://localhost:8000/studio in your browser.
+echo   On this PC:   http://localhost:8000/studio
+echo   On a laptop:  http://^<this PC's LAN IP^>:8000/studio  (same LAN)
+echo   Mock outputs stay in %PLUSHY_OUTPUT_DIR%.
 echo   Press CTRL+C here to stop the server.
 echo.
 timeout /t 2 >nul
 start http://localhost:8000/studio
-python -m uvicorn app:app --port 8000
+python -m uvicorn app:app --host 0.0.0.0 --port 8000
 echo.
 echo Server stopped.
 pause

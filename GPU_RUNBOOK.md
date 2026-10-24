@@ -1,31 +1,67 @@
-# Plushy AI — Sprite Runbook (RTX 4060, Windows)
+# Plushy AI - Sprite Runbook (RTX 4060, Windows)
 
-Goal: generate your first real transparent-PNG sprite on your GPU.
-Expected time: ~20–30 min first run (mostly one-time downloads), seconds after.
+Goal: generate real transparent-PNG sprites on the GPU PC, send prompts
+from a laptop on the same network, and collect the results in OneDrive.
 
 ## 0. Prerequisites
 
-- Docker Desktop for Windows, using the **WSL2 backend**
-- NVIDIA drivers installed on Windows (you have them — Ollama uses the GPU)
-- ~15 GB free disk (Docker layers + SDXL-Turbo weights, ~7GB once)
-- **Close Ollama and GPU-heavy browser tabs** before generating — 8GB VRAM
-  is plenty for SDXL-Turbo, but Ollama holds VRAM by default
+• Docker Desktop for Windows, using the WSL2 backend
+• NVIDIA drivers installed on Windows
+• About 15 GB free disk for Docker layers and the one-time SDXL-Turbo download
+• OneDrive signed in and syncing on the GPU PC
+• Close Ollama and GPU-heavy browser tabs before generating - the RTX 4060 has 8 GB VRAM, which is enough for SDXL-Turbo when other GPU work is closed
 
-Verify the GPU is visible to Docker (PowerShell):
+Verify the GPU is visible to Docker in PowerShell:
 
 ```powershell
 docker run --rm --gpus all nvidia/cuda:12.1.0-base-ubuntu22.04 nvidia-smi
 ```
 
-## 1. Pull and build
+## 1. Pull the latest prompts and code
 
 ```powershell
-cd plushy-ai   # wherever you cloned the repo
+cd plushy-ai
 git pull
-docker build -t plushy-ai .
 ```
 
-## 2. First sprite
+The live server mounts this repo into the container, so newly pulled code
+and prompt files apply when the server is restarted. Run
+`docker build -t plushy-ai .` again only when the Dockerfile or
+requirements changed.
+
+## 2. Start the live server for the GPU PC and laptop
+
+Double-click `start-gui.bat`, or run it from PowerShell:
+
+```powershell
+.\start-gui.bat
+```
+
+• GPU PC: `http://localhost:8000/studio`
+• Laptop on the same LAN: `http://<GPU PC LAN IP>:8000/studio`
+• The launcher prints the LAN addresses it finds.
+• Keep the GPU PC, Docker Desktop and the launcher window on while working from the laptop.
+• The laptop uses the Studio in its browser to send prompts, watch progress, browse `/api/outputs` results and download PNGs.
+• If the laptop cannot connect, allow Docker Desktop or TCP port 8000 through Windows Firewall on the Private network.
+• There is no login on the LAN server. Use it only on a trusted network and do not forward port 8000 to the internet.
+
+## 3. Output folder and OneDrive sharing
+
+The Studio writes to `%OneDrive%\Plushy AI\outputs` by default. The launcher
+prints the exact active folder before starting.
+
+To use a different folder for one launch, set it before running the launcher:
+
+```powershell
+$env:PLUSHY_OUTPUT_DIR = "D:\PlushyOutputs"
+.\start-gui.bat
+```
+
+Share the `Plushy AI` folder in OneDrive with the Muse team. Result PNGs
+remain in the folder when old job records expire. Batch folders and
+`manifest.json` files placed under the same tree also sync to OneDrive.
+
+## 4. First sprite from the command line
 
 ```powershell
 docker run --rm --gpus all `
@@ -34,54 +70,39 @@ docker run --rm --gpus all `
   plushy-ai python sprites.py --prompt "a pine tree" --output /app/my_sprites
 ```
 
-Watch the log: first run downloads SDXL-Turbo into the `plushy-hf` volume
-(one time, a few minutes), then generates. Output: `my_sprites/a_pine_tree.png`
-with a transparent background.
+The first run downloads SDXL-Turbo into the `plushy-hf` volume once. Later
+runs reuse it.
 
-## 3. Batch
+## 5. Run the EverPlanet-inspired Zealandia pack
 
-Write `prompts.txt` (one per line, `#` = comment), then:
+Read `prompts/EVERPLANET_PRODUCTION_PACK.md` first. It gives the file order,
+style locks and output subfolders. The PowerShell pattern below mounts the
+pulled repo and the OneDrive output tree, so the batch uses the newest
+prompts and the PNGs sync after generation.
 
 ```powershell
+$OutRoot = Join-Path $env:OneDrive "Plushy AI\outputs"
+New-Item -ItemType Directory -Force $OutRoot | Out-Null
+
 docker run --rm --gpus all `
-  -v "${PWD}/prompts.txt:/app/prompts.txt" `
-  -v "${PWD}/my_sprites:/app/my_sprites" `
+  -v "${PWD}:/app" `
+  -v "${OutRoot}:/app/plushy_outputs" `
   -v plushy-hf:/root/.cache/huggingface `
-  plushy-ai python sprites.py --prompts /app/prompts.txt --output /app/my_sprites --seeds 3 --size 256
+  plushy-ai python sprites.py `
+    --prompts /app/prompts/everplanet_waitemata_buildings.txt `
+    --subject-type building --style 2.5d --seeds 2 --size 768 `
+    --output /app/plushy_outputs/waitemata_buildings
 ```
 
-You get PNGs + `manifest.json` (prompt, seed, file per entry).
-
-## 4. Web UI
-
-Easiest: double-click `start-gui.bat` (builds the image on first run,
-mounts `outputs/`, opens the Studio). Or manually:
-
-```powershell
-docker run --rm --gpus all -p 8000:8000 -v "${PWD}/outputs:/app/outputs" -v plushy-hf:/root/.cache/huggingface plushy-ai
-```
-
-Open http://localhost:8000/studio — type a prompt, watch progress,
-download the PNG. Mounting `outputs/` matters: without it the PNGs die
-with the container (`--rm`).
-
-**View from another PC (same LAN):** the server already binds
-0.0.0.0 (Dockerfile CMD), so open `http://<GPU PC's LAN IP>:8000/studio`
-on the second PC — `start-gui.bat` prints that address. The Studio
-gallery loads everything already in `outputs/` (via `GET /api/outputs`),
-so past generations are visible there too, not just the current
-session's. If it won't connect, allow port 8000 / Docker Desktop
-through Windows Firewall (Private network) on the GPU PC.
-
-Note: `start.bat` is the *mock* launcher — it forces
-`PLUSHY_MOCK=1`, so it only ever produces checkerboard placeholders.
-For real sprites use `start-gui.bat` / Docker above.
+Repeat with the other prompt files and commands from the production pack.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| `could not select device driver` / no GPU in `nvidia-smi` | Docker Desktop → Settings → Resources → GPU (enable), restart Docker |
-| CUDA out of memory | Close Ollama/browser; sprites rarely OOM — if it happens, `--size 256` |
-| Slow first run | Model download; check with `docker stats` — it only happens once per volume |
-| Blank/white sprite | Prompt too abstract — keep it concrete ("a pine tree", "a red fire hydrant") |
+| `could not select device driver` or no GPU in `nvidia-smi` | Docker Desktop Settings, Resources, GPU - enable it and restart Docker |
+| CUDA out of memory | Close Ollama and GPU-heavy apps; lower the batch size to 512 or 256 |
+| Laptop cannot open the Studio | Check both machines are on the same LAN, the GPU PC is awake, Docker is running, and Windows Firewall allows port 8000 on Private networks |
+| New prompt file is missing in a one-off Docker run | Mount the repo with `-v "${PWD}:/app"` as in section 5, or rebuild the image |
+| OneDrive does not show new files | Confirm OneDrive is signed in, syncing is not paused, and the launcher printed the expected OneDrive output folder |
+| Blank or white sprite | Keep the prompt concrete, for example "a pine tree" or "a red fire hydrant" |

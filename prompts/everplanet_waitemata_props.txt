@@ -1,0 +1,22 @@
+# Waitemata village PROPS - EverPlanet-inspired original set
+# Single objects, straight-on front view, transparent background after rembg.
+# Run: python sprites.py --prompts prompts/everplanet_waitemata_props.txt --style 2.5d --seeds 2 --size 768 --output ./waitemata_props
+
+village well, straight-on front view, round stone well with a tiny shingled roof, wooden bucket on a rope, carved wave pattern on the stones, cute stylized fantasy game prop, single object
+wooden village notice board, straight-on front view, shingled mini roof, blank parchment notices with no text, red ribbon pins, cute stylized fantasy game prop, single object
+round wooden market stall, straight-on front view, coral striped awning, fruit crates and cloth rolls on the counter, hanging scale, cute stylized fantasy game prop, single object
+village street lantern post, straight-on front view, curved wooden post with a warm glass lantern and a small wave emblem, cute stylized fantasy game prop, single object
+wooden fence segment, straight-on front view, three horizontal rails between two round posts, small carved finials, cute stylized fantasy game prop, single object
+village gate lantern pair on a wooden stand, straight-on front view, two warm paper lanterns hanging from a carved beam, cute stylized fantasy game prop, single object
+blacksmith anvil station, straight-on front view, heavy anvil on a tree stump, hammer and horseshoes, water quench barrel, cute stylized fantasy game prop, single object
+cooking contest prep table, straight-on front view, wooden table with vegetable crates, hanging pans, a stew pot and bread loaves, cute stylized fantasy game prop, single object
+alchemy herb drying rack, straight-on front view, wooden frame with hanging herb bundles, small potion bottles and a mortar, cute stylized fantasy game prop, single object
+village mailbox post, straight-on front view, round wooden mailbox with a brass slot and a tiny roof, cute stylized fantasy game prop, single object
+wooden signpost with three blank arrow boards, straight-on front view, carved post with a small lantern on top, cute stylized fantasy game prop, single object
+fishing dock crate set, straight-on front view, stacked wooden crates with rope, a fishing net and two buoys, cute stylized fantasy game prop, single object
+village flower cart, straight-on front view, two-wheel wooden cart filled with colorful flower pots and watering can, cute stylized fantasy game prop, single object
+training dummy, straight-on front view, padded straw dummy on a wooden stand with a round target shield, cute stylized fantasy game prop, single object
+wooden bench with a woven cushion, straight-on front view, carved armrests and a small potted plant beside it, cute stylized fantasy game prop, single object
+village water trough and pump, straight-on front view, wooden pump handle, stone trough with clear water, bucket beside it, cute stylized fantasy game prop, single object
+festival bunting arch, straight-on front view, two wooden poles with colorful triangle flags strung between them, cute stylized fantasy game prop, single object
+small Leo Coin money pouch display stand, straight-on front view, wooden stand with a drawstring pouch and blank round gold coins with no symbols, cute stylized fantasy game prop, single object

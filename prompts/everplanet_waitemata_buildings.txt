@@ -1,0 +1,33 @@
+# Waitemata village BUILDINGS - EverPlanet-inspired original set
+# Purpose: the first village at the Auckland site in Zealandia. These are
+# original designs in a bright, chunky, cute fantasy MMORPG mood. Do not copy
+# any existing game building or asset.
+# VIEW LOCK: straight-on front elevation only. Run with --subject-type
+# building and --style 2.5d. Do not use --style 3d for village buildings.
+# Run: python sprites.py --prompts prompts/everplanet_waitemata_buildings.txt --subject-type building --style 2.5d --seeds 2 --size 768 --output ./waitemata_buildings
+
+# - Espil House, the cauldron maker's home and the player's home point -
+round wooden cauldron-maker house, squat black cauldron-shaped roof ornament, wide timber door, brass hinges, small round windows with warm light, hanging herb bundles, stone chimney, cozy original fantasy village home
+storyteller cottage with a cauldron emblem sign, steep shingled roof, carved wooden porch, copper kettle chimney cap, flower boxes, warm windows, original cute fantasy village house
+
+# - Village homes -
+small wooden cottage, cream plaster walls, blue shingled roof, round front door, tiny porch, flower planter boxes, stone step, original cute fantasy village home
+cozy timber family house, red tile roof, wide front window, wooden balcony rail, laundry line over the porch, potted herbs, original cute fantasy village home
+two-story village house, honey wood walls, green roof, dormer window, small front garden fence, lantern beside the door, original cute fantasy village home
+round-roof fisherman cottage, pale plaster walls, teal shingles, fishing net and buoy decorations by the door, shell wind chime, original cute fantasy coastal village home
+farmer house with a low wide roof, warm timber walls, front vegetable crates, sunflower pots, wooden water barrel, original cute fantasy village home
+elder cottage, mossy stone foundation, carved wooden door, purple shingled roof, reading window seat, hanging lantern, original cute fantasy village home
+
+# - Chief hall and public buildings -
+village chief meeting hall, broad wooden gable, carved sun and wave emblem over the entrance, open front porch with benches, twin lanterns, banner poles, original cute fantasy village hall
+small village inn and tavern, two-story timber building, round sign with a mug emblem, striped awning, barrels and benches by the entrance, warm windows, original cute fantasy village inn
+village market hall, open front stalls under one wide roof, cream and coral awnings, hanging scale sign, crates of fruit and cloth bolts, original cute fantasy village market
+crafting workshop building, sturdy timber walls, wide open front work bay, hanging tools, stacked lumber, stone chimney, workbench visible at the entrance, original cute fantasy village workshop
+village kitchen and food hall, wide hearth chimney, copper hood, round serving window, hanging pans, bread sign, outdoor prep counter, original cute fantasy village building
+healer herb house, white plaster walls, green roof, leaf emblem sign, drying herb racks by the door, round apothecary window, original cute fantasy village building
+
+# - Gates, tower and civic pieces -
+village south gatehouse, two wooden watch posts joined by a shingled arch roof, open double gate, lantern pair, carved wave emblem, original cute fantasy village gate
+village watchtower, tapered wooden tower, shingled lookout cap, small bell, rope ladder, banner flag, stone base, original cute fantasy village tower
+village storage barn, wide sliding timber door, hay loft window, pulley beam, barrels and sacks by the entrance, rust red roof, original cute fantasy village barn
+small harbor storehouse, weathered teal timber walls, boat-shaped roof ridge, round cargo door, rope coils and crates, original cute fantasy coastal village building

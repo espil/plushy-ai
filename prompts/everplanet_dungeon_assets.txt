@@ -1,0 +1,36 @@
+# Dungeon ASSETS - interior props, doors, guardians and rewards
+# Single objects unless a guardian is named. Front view, game-ready sprites.
+# Props run: python sprites.py --prompts prompts/everplanet_dungeon_assets.txt --style 2.5d --seeds 2 --size 768 --output ./dungeon_assets
+# For guardians only, rerun the guardian lines with --style 3d if a chunkier
+# monster read is wanted. Keep the same seed when comparing styles.
+
+# - Doors, exits and lore pieces -
+sealed boss door, straight-on front view, huge round stone door with a glowing heart-shaped crystal lock and carved spiral rings with no letters, cute stylized fantasy game prop, single object
+dungeon exit portal, straight-on front view, small stone arch with swirling teal light inside and a stepped round base, cute stylized fantasy game prop, single object
+ancient lore stele, straight-on front view, tall mossy stone tablet with carved wave and sun patterns and no writing, small glowing crystal at its base, cute stylized fantasy game prop, single object
+ruin heart pedestal, straight-on front view, carved stone pedestal holding a floating red octahedron crystal, soft red glow, cute stylized fantasy game prop, single object
+bronze dungeon key stand, straight-on front view, small stone stand holding one large ornate bronze key, cute stylized fantasy game prop, single object
+
+# - Sunken Grotto set -
+teal crystal cluster, straight-on front view, glowing aqua crystals growing from wet black rock, water droplets, cute stylized fantasy game prop, single object
+grotto treasure chest, straight-on front view, waterlogged wooden chest with bronze bands, pearl clasp and a faint aqua glow at the seam, cute stylized fantasy game prop, single object
+underground waterfall basin, straight-on front view, small round stone basin with a waterfall ribbon pouring in and glowing blue mushrooms, cute stylized fantasy game prop, single object
+dripping stalactite pair, straight-on front view, two pale stone stalactites with water drops and moss tips, cute stylized fantasy game prop, single object
+
+# - Emberdeep set -
+lava crystal cluster, straight-on front view, glowing orange crystals growing from black volcanic rock, ember cracks, cute stylized fantasy game prop, single object
+obsidian treasure chest, straight-on front view, black glassy stone chest with bronze bands and a glowing ember seam, cute stylized fantasy game prop, single object
+magma brazier, straight-on front view, squat black stone brazier holding bright orange coals and small flames, cute stylized fantasy game prop, single object
+volcanic rock bridge segment, straight-on front view, chunky dark stone slab bridge piece with glowing cracks underneath, cute stylized fantasy game prop, single object
+
+# - Drowned Vault set -
+coral crystal cluster, straight-on front view, pink coral branches with glowing blue crystal tips on wet stone, cute stylized fantasy game prop, single object
+sunken bronze treasure chest, straight-on front view, green-patina bronze chest with barnacles and a glowing blue seam, cute stylized fantasy game prop, single object
+flooded stone fountain, straight-on front view, carved round fountain with still glowing water and hanging algae, cute stylized fantasy game prop, single object
+ancient bronze ring door handle, straight-on front view, huge circular bronze handle on a cracked stone slab fragment, cute stylized fantasy game prop, single object
+
+# - Guardians and dungeon creatures (full body, one creature) -
+grotto guardian crab monster, chunky teal crystal shell, one oversized claw, glowing aqua eyes, cute but fierce stylized fantasy game monster, full body
+ember imp guardian monster, small chunky lava rock body, glowing orange cracks, tiny horns, mischievous fierce face, cute stylized fantasy game monster, full body
+drowned warden monster, bulky stone golem covered in coral and seaweed, glowing blue core in the chest, heavy bronze ring on one arm, cute stylized fantasy game monster, full body
+ruin strayer guardian monster, lean stone and moss creature with a cracked crystal eye, long arms, carved spiral markings with no letters, cute stylized fantasy game monster, full body

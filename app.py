@@ -1,5 +1,5 @@
 """
-Plushy AI — local sprite generator (sprite-only build).
+Plushy AI - local sprite generator (sprite-only build).
 
 Text prompt -> SDXL-Turbo -> background removal -> transparent PNG,
 ready as billboard sprites in a game engine. No cloud, your GPU.
@@ -22,9 +22,14 @@ Background worker coroutines pull jobs and run the diffusion pipeline in a
 thread executor so the event loop never blocks.
 
 Run locally (mock placeholders, no GPU):
-  PLUSHY_MOCK=1 python -m uvicorn app:app --port 8000
+  PLUSHY_MOCK=1 python -m uvicorn app:app --host 0.0.0.0 --port 8000
 Run with GPU (docker):
   docker build -t plushy-ai . && docker run --gpus all -p 8000:8000 plushy-ai
+
+Outputs: PLUSHY_OUTPUT_DIR wins when set. On a Windows PC without it, the
+default is "<OneDrive>/Plushy AI/outputs" when Windows exposes a OneDrive
+folder, so generations sync to OneDrive and can be shared from there.
+Otherwise outputs stay in the repo's local outputs folder.
 """
 
 from __future__ import annotations
@@ -47,7 +52,27 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname
 log = logging.getLogger("plushy")
 
 BASE_DIR = Path(__file__).resolve().parent
-OUTPUT_DIR = BASE_DIR / "outputs"
+
+
+def _resolve_output_dir() -> Path:
+    """Where generated PNGs land.
+
+    PLUSHY_OUTPUT_DIR is the explicit override (the Docker launcher points
+    it at the mounted /app/outputs). On Windows, fall back to the user's
+    OneDrive folder so results sync off the GPU PC and can be shared with
+    the Muse team from OneDrive. Anywhere else, keep the repo outputs.
+    """
+    configured = os.getenv("PLUSHY_OUTPUT_DIR")
+    if configured:
+        return Path(configured).expanduser()
+    for env_name in ("OneDrive", "OneDriveConsumer", "OneDriveCommercial"):
+        root = os.getenv(env_name)
+        if root:
+            return Path(root) / "Plushy AI" / "outputs"
+    return BASE_DIR / "outputs"
+
+
+OUTPUT_DIR = _resolve_output_dir()
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 NUM_WORKERS = int(os.getenv("PLUSHY_WORKERS", "1"))  # 1 = one GPU, sequential
@@ -215,19 +240,25 @@ async def _worker(worker_id: int):
 
 
 async def _janitor():
-    """Delete jobs + files older than JOB_TTL_SEC."""
+    """Expire job records older than JOB_TTL_SEC.
+
+    Result PNGs are kept: the output folder doubles as the shared archive
+    (OneDrive on Han's PC), and /api/outputs lists what is on disk. Only
+    the in-memory record and any uploaded img2img source are removed.
+    Manual DELETE /api/job/{job_id} still removes that job's result.
+    """
     while True:
         await asyncio.sleep(3600)
         now = time.time()
         for job_id, job in list(jobs.items()):
             if now - job.created_at > JOB_TTL_SEC:
                 try:
-                    if job.result_path and job.result_path.exists():
-                        job.result_path.unlink()
+                    if job.init_image and job.init_image.exists():
+                        job.init_image.unlink()
                 except OSError:
                     pass
                 jobs.pop(job_id, None)
-                log.info("expired job %s cleaned up", job_id)
+                log.info("expired job %s cleaned up (result kept on disk)", job_id)
 
 
 # ---------------------------------------------------------------------------
@@ -242,7 +273,7 @@ async def _startup():
     for i in range(max(1, NUM_WORKERS)):
         _workers.append(asyncio.create_task(_worker(i)))
     asyncio.create_task(_janitor())
-    log.info("Plushy AI ready — %d worker(s), outputs=%s, mock=%s",
+    log.info("Plushy AI ready - %d worker(s), outputs=%s, mock=%s",
              NUM_WORKERS, OUTPUT_DIR, MOCK)
 
 
@@ -261,6 +292,7 @@ async def health():
         "workers": NUM_WORKERS,
         "queued": job_queue.qsize(),
         "jobs": len(jobs),
+        "output_dir": str(OUTPUT_DIR),
     }
 
 
@@ -372,7 +404,7 @@ async def list_outputs():
     """List every sprite already on disk (newest first).
 
     The Studio gallery is in-browser memory only, so without this a
-    refresh — or opening /studio from a second PC — shows nothing even
+    refresh - or opening /studio from a second PC - shows nothing even
     though the PNGs are sitting in outputs/. This is what makes past
     generations viewable from another machine on the LAN.
     """
@@ -391,7 +423,7 @@ async def list_outputs():
 
 @app.get("/api/outputs/{name}")
 async def get_output(name: str):
-    # Path(name).name strips any directory part — no traversal out of outputs/.
+    # Path(name).name strips any directory part - no traversal out of outputs/.
     safe = Path(name).name
     if safe != name or not safe.endswith(".png"):
         raise HTTPException(400, "bad file name")

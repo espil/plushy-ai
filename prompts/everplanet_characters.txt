@@ -1,0 +1,30 @@
+# EverPlanet-inspired original CHARACTERS for Zealandia
+# Original chibi fantasy MMORPG designs only. Do not copy any existing game
+# character, outfit, hairstyle or sprite. One character per image, full body.
+# Run: python sprites.py --prompts prompts/everplanet_characters.txt --style chibi --seeds 2 --size 512 --output ./zealandia_characters
+
+# - Player travellers -
+young male traveller hero, tousled chestnut hair, cream tunic with teal sash, brown shorts and boots, small travel satchel, cheerful determined face, full body standing pose
+young female traveller hero, long auburn hair in a side braid, cream blouse with coral sash, teal skirt over leggings, brown boots, small travel satchel, bright confident face, full body standing pose
+young male traveller in a fire-toned outfit, dark red hair, rust orange jacket, black leggings, ember lantern charm at the belt, full body standing pose
+young female traveller in an ice-toned outfit, silver blue hair in twin loops, pale blue coat dress, white leggings, snowdrop charm at the belt, full body standing pose
+
+# - Waitemata villagers -
+village chief elder man, silver beard, carved wooden staff, deep teal robe with wave trim, kind wise face, full body standing pose
+fisherwoman villager, dark hair in a bun, rolled-sleeve aqua tunic, apron with shell pockets, holding a woven fish basket, full body standing pose
+farmer boy villager, straw hat, freckles, green overalls over a cream shirt, holding a small pumpkin, full body standing pose
+blacksmith woman villager, copper hair in a high ponytail, leather apron over a rust shirt, smith gloves, holding a small hammer, full body standing pose
+cook grandmother villager, grey bun hair, warm smile, floral apron over a plum dress, holding a wooden ladle, full body standing pose
+merchant man villager, neat black moustache, cream shirt with a gold vest, coin pouch at the belt, holding a blank ledger book, full body standing pose
+healer girl villager, mint green hair ribbon, white and sage dress, herb basket on one arm, gentle face, full body standing pose
+village guard woman, chestnut ponytail, teal padded tunic, wooden round shield with a wave emblem, short spear held upright, full body standing pose
+village child girl, twin pigtails with coral ribbons, yellow dress, holding a paper windmill, full body standing pose
+village child boy, messy black hair, blue shorts and striped shirt, holding a wooden toy boat, full body standing pose
+carpenter man villager, rolled sleeves, brown tool belt, pencil behind one ear, holding a small wooden plank, full body standing pose
+innkeeper woman villager, warm brown hair in a braid, burgundy dress with a cream apron, holding a wooden mug tray, full body standing pose
+
+# - Story figures -
+Lunaris, moon keeper goddess girl, very long silver lavender hair, crescent hair ornament, white and violet layered robe dress, holding a small hourglass lantern, calm mysterious face, full body standing pose
+Ahi, fire master man, wild crimson hair, ember orange and charcoal layered robe, flame-shaped wooden staff, stern proud face, full body standing pose
+Huka, ice master woman, straight white hair with pale blue ends, white and glacier blue layered robe, frost crystal staff, cool distant face, full body standing pose
+Espil, hooded cauldron maker, face hidden in deep hood shadow, elegant teal and charcoal robe, graceful pale hands visible at the sleeves, calm still posture, full body standing pose

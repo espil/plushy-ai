@@ -1,0 +1,24 @@
+# Dungeon ENTRANCES - the three Zealandia dungeons plus variants
+# Each entrance is a readable game landmark: a framed opening the player walks
+# to and interacts with. Front elevation, single structure, no characters.
+# Run: python sprites.py --prompts prompts/everplanet_dungeon_entrances.txt --subject-type building --style 2.5d --seeds 2 --size 768 --output ./dungeon_entrances
+
+# - The Sunken Grotto, behind the Kepirohi Falls leg -
+sunken grotto dungeon entrance, dark cave mouth framed by wet black basalt columns, waterfall ribbons falling on both sides, glowing teal crystals inside the opening, carved wave lintel stone, cute stylized fantasy game dungeon entrance
+drowned cave gate, round stone arch half covered in green moss and small waterfalls, pale aqua light glowing from inside, wet stone steps leading in, cute stylized fantasy game dungeon entrance
+ancient water shrine entrance, basalt stone doorway with carved spiral wave patterns, two crystal lanterns, thin waterfall curtain over one side, cute stylized fantasy game dungeon entrance
+
+# - Emberdeep, in the Fautaua Falls gorge -
+emberdeep dungeon entrance, volcanic rock arch with glowing orange lava cracks, obsidian gate pillars, ember sparks and a dark smoky opening, carved flame lintel stone, cute stylized fantasy game dungeon entrance
+lava forge gate, heavy black stone doorway with a round bronze ring door half open, magma light spilling out, basalt steps and ash stones, cute stylized fantasy game dungeon entrance
+smoking ravine entrance, jagged red brown rock frame around a cave mouth, glowing coal seams in the stone, two burnt wooden warning posts with blank signs, cute stylized fantasy game dungeon entrance
+
+# - The Drowned Vault, on the Sopoaga Falls leg -
+drowned vault dungeon entrance, massive round bronze vault door set in flooded stone, carved spiral keyhole, coral and seaweed on the frame, water pooling at the steps, cute stylized fantasy game dungeon entrance
+sunken temple door, tall stone doorway with a bronze ring handle, barnacle clusters and green algae streaks, pale blue light under the door, wet carved steps, cute stylized fantasy game dungeon entrance
+lagoon ruin entrance, broken stone arch over a dark water-filled passage, hanging vines, glowing blue mushrooms at the base, carved shell emblem lintel, cute stylized fantasy game dungeon entrance
+
+# - Generic ruin gates for future dungeons -
+ancient ruin heart gate, tall cracked stone doorway with a floating red crystal shard above the lintel, vines and small glowing runes with no letters, cute stylized fantasy game dungeon entrance
+stepped pyramid summit door, small dark stone doorway at the top of wide mossy steps, two guardian statues with blank faces, golden light seam in the door, cute stylized fantasy game dungeon entrance
+canal stone lock gate, heavy basalt log wall with a round water gate opening, bronze wheel valve, teal glow from the tunnel, cute stylized fantasy game dungeon entrance
