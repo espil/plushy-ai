@@ -1,0 +1,1066 @@
+{
+ "manifest": "plushy-asset-manifest/v1",
+ "standard": "docs/standard/PLUSHY_PRODUCTION_STANDARD.md",
+ "schema": "docs/standard/PLUSHY_ASSET_SCHEMA.json",
+ "note": "Generated from actual files by gen_manifest.py. An asset whose file does not exist never appears here. Masters are uncompressed unless model3d.compressed is true.",
+ "assets": [
+  {
+   "id": "landmark_zealandia_timestone_01",
+   "name": "Time Stone",
+   "type": "model3d",
+   "category": "landmark",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/timestone-plushy/timestone.glb",
+    "bytes": 14184372,
+    "format": "glb"
+   },
+   "notes": "Wired into the game 2026-10-22 (optimized copy in payload). Master is uncompressed.",
+   "model3d": {
+    "triangles": 30977,
+    "animations": [],
+    "nodeName": "timestone",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 5.52
+   }
+  },
+  {
+   "id": "building_auckland_b1_redbrick_01",
+   "name": "Auckland Street Building B1 Redbrick",
+   "type": "model3d",
+   "category": "building",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/auckland-street-buildings/building_b1_redbrick.glb",
+    "bytes": 14300080,
+    "format": "glb"
+   },
+   "notes": "Master, uncompressed; decimation + gltfpack required before production use.",
+   "model3d": {
+    "triangles": 30030,
+    "animations": [],
+    "nodeName": "building_b1_redbrick",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 11.0
+   }
+  },
+  {
+   "id": "building_auckland_b2_teal_01",
+   "name": "Auckland Street Building B2 Teal",
+   "type": "model3d",
+   "category": "building",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/auckland-street-buildings/building_b2_teal.glb",
+    "bytes": 12384132,
+    "format": "glb"
+   },
+   "notes": "Master, uncompressed; decimation + gltfpack required before production use.",
+   "model3d": {
+    "triangles": 29570,
+    "animations": [],
+    "nodeName": "building_b2_teal",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 11.0
+   }
+  },
+  {
+   "id": "building_auckland_b3_orange_01",
+   "name": "Auckland Street Building B3 Orange",
+   "type": "model3d",
+   "category": "building",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/auckland-street-buildings/building_b3_orange.glb",
+    "bytes": 13293376,
+    "format": "glb"
+   },
+   "notes": "Master, uncompressed; decimation + gltfpack required before production use.",
+   "model3d": {
+    "triangles": 28921,
+    "animations": [],
+    "nodeName": "building_b3_orange",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 11.0
+   }
+  },
+  {
+   "id": "building_auckland_b4_cafe_01",
+   "name": "Auckland Street Building B4 Cafe",
+   "type": "model3d",
+   "category": "building",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/auckland-street-buildings/building_b4_cafe.glb",
+    "bytes": 12306024,
+    "format": "glb"
+   },
+   "notes": "Master, uncompressed; decimation + gltfpack required before production use.",
+   "model3d": {
+    "triangles": 28766,
+    "animations": [],
+    "nodeName": "building_b4_cafe",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 7.0
+   }
+  },
+  {
+   "id": "character_hermes_static_01",
+   "name": "Hermes (static)",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/boss-hermes/hermes.glb",
+    "bytes": 11466956,
+    "format": "glb"
+   },
+   "notes": "Boss, never aggroed by design.",
+   "model3d": {
+    "triangles": 30982,
+    "animations": [],
+    "nodeName": "hermes",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 7.2
+   }
+  },
+  {
+   "id": "character_hermes_animated_01",
+   "name": "Hermes (animated)",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/boss-hermes/hermes_animated.glb",
+    "bytes": 13618628,
+    "format": "glb"
+   },
+   "notes": "Clips: Idle, Walk, Run, Leap, WalkBasic, RunBasic.",
+   "model3d": {
+    "triangles": 30982,
+    "animations": [
+     "Idle",
+     "Walk",
+     "Run",
+     "Leap",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "nodeName": "char1",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 7.2
+   }
+  },
+  {
+   "id": "character_lunaris_static_01",
+   "name": "Lunaris (static)",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/lunaris/lunaris.glb",
+    "bytes": 10780152,
+    "format": "glb"
+   },
+   "notes": "",
+   "model3d": {
+    "triangles": 30242,
+    "animations": [],
+    "nodeName": "lunaris",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 1.7
+   }
+  },
+  {
+   "id": "character_lunaris_animated_01",
+   "name": "Lunaris (animated)",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/lunaris/lunaris_animated.glb",
+    "bytes": 13072756,
+    "format": "glb"
+   },
+   "notes": "Clips: Idle, Walk, TimeCast, Wave, WalkBasic, RunBasic. Wired into the game 2026-10-22.",
+   "model3d": {
+    "triangles": 30242,
+    "animations": [
+     "Idle",
+     "Walk",
+     "TimeCast",
+     "Wave",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "nodeName": "char1",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 1.7
+   }
+  },
+  {
+   "id": "character_retexture_male_v1",
+   "name": "Player male retexture v1",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-retexture"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-retextures/male_v1.glb",
+    "bytes": 5679388,
+    "format": "glb"
+   },
+   "notes": "Texture-only variant of the original model; geometry/rig/animations byte-identical to the original. Han decision 2026-10-22: keep as-is."
+  },
+  {
+   "id": "character_variant_male_v1",
+   "name": "Generated variant male v1 (NPC planned)",
+   "type": "model3d",
+   "category": "character",
+   "status": "placeholder",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-variants/male_v1/male_v1_animated.glb",
+    "bytes": 9683600,
+    "format": "glb"
+   },
+   "notes": "Full-generation set superseded by the retextures for player use; Han decided 2026-10-22 to repurpose as NPCs.",
+   "model3d": {
+    "triangles": 30873,
+    "animations": [
+     "Idle",
+     "Walk",
+     "Run",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "heightM": 1.7,
+    "pivot": "base-centre, ground y=0",
+    "compressed": false
+   }
+  },
+  {
+   "id": "character_retexture_male_v2",
+   "name": "Player male retexture v2",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-retexture"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-retextures/male_v2.glb",
+    "bytes": 6369728,
+    "format": "glb"
+   },
+   "notes": "Texture-only variant of the original model; geometry/rig/animations byte-identical to the original. Han decision 2026-10-22: keep as-is."
+  },
+  {
+   "id": "character_variant_male_v2",
+   "name": "Generated variant male v2 (NPC planned)",
+   "type": "model3d",
+   "category": "character",
+   "status": "placeholder",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-variants/male_v2/male_v2_animated.glb",
+    "bytes": 10962600,
+    "format": "glb"
+   },
+   "notes": "Full-generation set superseded by the retextures for player use; Han decided 2026-10-22 to repurpose as NPCs.",
+   "model3d": {
+    "triangles": 31015,
+    "animations": [
+     "Idle",
+     "Walk",
+     "Run",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "heightM": 1.7,
+    "pivot": "base-centre, ground y=0",
+    "compressed": false
+   }
+  },
+  {
+   "id": "character_retexture_male_v3",
+   "name": "Player male retexture v3",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-retexture"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-retextures/male_v3.glb",
+    "bytes": 6370156,
+    "format": "glb"
+   },
+   "notes": "Texture-only variant of the original model; geometry/rig/animations byte-identical to the original. Han decision 2026-10-22: keep as-is."
+  },
+  {
+   "id": "character_variant_male_v3",
+   "name": "Generated variant male v3 (NPC planned)",
+   "type": "model3d",
+   "category": "character",
+   "status": "placeholder",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-variants/male_v3/male_v3_animated.glb",
+    "bytes": 11797696,
+    "format": "glb"
+   },
+   "notes": "Full-generation set superseded by the retextures for player use; Han decided 2026-10-22 to repurpose as NPCs.",
+   "model3d": {
+    "triangles": 30972,
+    "animations": [
+     "Idle",
+     "Walk",
+     "Run",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "heightM": 1.7,
+    "pivot": "base-centre, ground y=0",
+    "compressed": false
+   }
+  },
+  {
+   "id": "character_retexture_male_v4",
+   "name": "Player male retexture v4",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-retexture"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-retextures/male_v4.glb",
+    "bytes": 6432960,
+    "format": "glb"
+   },
+   "notes": "Texture-only variant of the original model; geometry/rig/animations byte-identical to the original. Han decision 2026-10-22: keep as-is."
+  },
+  {
+   "id": "character_variant_male_v4",
+   "name": "Generated variant male v4 (NPC planned)",
+   "type": "model3d",
+   "category": "character",
+   "status": "placeholder",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-variants/male_v4/male_v4_animated.glb",
+    "bytes": 11243136,
+    "format": "glb"
+   },
+   "notes": "Full-generation set superseded by the retextures for player use; Han decided 2026-10-22 to repurpose as NPCs.",
+   "model3d": {
+    "triangles": 30900,
+    "animations": [
+     "Idle",
+     "Walk",
+     "Run",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "heightM": 1.7,
+    "pivot": "base-centre, ground y=0",
+    "compressed": false
+   }
+  },
+  {
+   "id": "character_retexture_female_v1",
+   "name": "Player female retexture v1",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-retexture"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-retextures/female_v1.glb",
+    "bytes": 5601148,
+    "format": "glb"
+   },
+   "notes": "Texture-only variant of the original model; geometry/rig/animations byte-identical to the original. Han decision 2026-10-22: keep as-is."
+  },
+  {
+   "id": "character_variant_female_v1",
+   "name": "Generated variant female v1 (NPC planned)",
+   "type": "model3d",
+   "category": "character",
+   "status": "placeholder",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-variants/female_v1/female_v1_animated.glb",
+    "bytes": 10285188,
+    "format": "glb"
+   },
+   "notes": "Full-generation set superseded by the retextures for player use; Han decided 2026-10-22 to repurpose as NPCs.",
+   "model3d": {
+    "triangles": 30333,
+    "animations": [
+     "Idle",
+     "Walk",
+     "Run",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "heightM": 1.7,
+    "pivot": "base-centre, ground y=0",
+    "compressed": false
+   }
+  },
+  {
+   "id": "character_retexture_female_v2",
+   "name": "Player female retexture v2",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-retexture"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-retextures/female_v2.glb",
+    "bytes": 6031184,
+    "format": "glb"
+   },
+   "notes": "Texture-only variant of the original model; geometry/rig/animations byte-identical to the original. Han decision 2026-10-22: keep as-is."
+  },
+  {
+   "id": "character_variant_female_v2",
+   "name": "Generated variant female v2 (NPC planned)",
+   "type": "model3d",
+   "category": "character",
+   "status": "placeholder",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-variants/female_v2/female_v2_animated.glb",
+    "bytes": 12425364,
+    "format": "glb"
+   },
+   "notes": "Full-generation set superseded by the retextures for player use; Han decided 2026-10-22 to repurpose as NPCs.",
+   "model3d": {
+    "triangles": 30939,
+    "animations": [
+     "Idle",
+     "Walk",
+     "Run",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "heightM": 1.7,
+    "pivot": "base-centre, ground y=0",
+    "compressed": false
+   }
+  },
+  {
+   "id": "character_retexture_female_v3",
+   "name": "Player female retexture v3",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-retexture"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-retextures/female_v3.glb",
+    "bytes": 6187212,
+    "format": "glb"
+   },
+   "notes": "Texture-only variant of the original model; geometry/rig/animations byte-identical to the original. Han decision 2026-10-22: keep as-is."
+  },
+  {
+   "id": "character_variant_female_v3",
+   "name": "Generated variant female v3 (NPC planned)",
+   "type": "model3d",
+   "category": "character",
+   "status": "placeholder",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-variants/female_v3/female_v3_animated.glb",
+    "bytes": 10963616,
+    "format": "glb"
+   },
+   "notes": "Full-generation set superseded by the retextures for player use; Han decided 2026-10-22 to repurpose as NPCs.",
+   "model3d": {
+    "triangles": 30824,
+    "animations": [
+     "Idle",
+     "Walk",
+     "Run",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "heightM": 1.7,
+    "pivot": "base-centre, ground y=0",
+    "compressed": false
+   }
+  },
+  {
+   "id": "character_retexture_female_v4",
+   "name": "Player female retexture v4",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-retexture"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-retextures/female_v4.glb",
+    "bytes": 6257608,
+    "format": "glb"
+   },
+   "notes": "Texture-only variant of the original model; geometry/rig/animations byte-identical to the original. Han decision 2026-10-22: keep as-is."
+  },
+  {
+   "id": "character_variant_female_v4",
+   "name": "Generated variant female v4 (NPC planned)",
+   "type": "model3d",
+   "category": "character",
+   "status": "placeholder",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/character-variants/female_v4/female_v4_animated.glb",
+    "bytes": 10861608,
+    "format": "glb"
+   },
+   "notes": "Full-generation set superseded by the retextures for player use; Han decided 2026-10-22 to repurpose as NPCs.",
+   "model3d": {
+    "triangles": 30215,
+    "animations": [
+     "Idle",
+     "Walk",
+     "Run",
+     "WalkBasic",
+     "RunBasic"
+    ],
+    "heightM": 1.7,
+    "pivot": "base-centre, ground y=0",
+    "compressed": false
+   }
+  },
+  {
+   "id": "character_lf2_firen_01",
+   "name": "LF2 Firen (modern outfit)",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/lf2-characters/firen.glb",
+    "bytes": 12433552,
+    "format": "glb"
+   },
+   "notes": "Static master, uncompressed.",
+   "model3d": {
+    "triangles": 31153,
+    "animations": [],
+    "nodeName": "firen",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 1.7
+   }
+  },
+  {
+   "id": "character_lf2_frozen_01",
+   "name": "LF2 Frozen (modern outfit)",
+   "type": "model3d",
+   "category": "character",
+   "status": "ready",
+   "source": {
+    "method": "meshy-i2i3d"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/lf2-characters/frozen.glb",
+    "bytes": 12740852,
+    "format": "glb"
+   },
+   "notes": "Static master, uncompressed.",
+   "model3d": {
+    "triangles": 30830,
+    "animations": [],
+    "nodeName": "frozen",
+    "pivot": "base-centre, ground y=0",
+    "compressed": false,
+    "heightM": 1.7
+   }
+  },
+  {
+   "id": "monster_sheet_brute_sheet",
+   "name": "Monster sheet brute_sheet",
+   "type": "sprite_sheet",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/brute_sheet.png",
+    "bytes": 2743191,
+    "format": "png",
+    "widthPx": 1920,
+    "heightPx": 1280,
+    "transparent": false,
+    "view": "sheet"
+   },
+   "notes": "Wired into the game 2026-10-23."
+  },
+  {
+   "id": "monster_sheet_brute_walk_sheet",
+   "name": "Monster sheet brute_walk_sheet",
+   "type": "sprite_sheet",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/brute_walk_sheet.png",
+    "bytes": 2684250,
+    "format": "png",
+    "widthPx": 1920,
+    "heightPx": 1280,
+    "transparent": false,
+    "view": "sheet"
+   },
+   "notes": "Wired into the game 2026-10-23."
+  },
+  {
+   "id": "monster_sheet_spitter_sheet",
+   "name": "Monster sheet spitter_sheet",
+   "type": "sprite_sheet",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/spitter_sheet.png",
+    "bytes": 1785576,
+    "format": "png",
+    "widthPx": 1920,
+    "heightPx": 1280,
+    "transparent": false,
+    "view": "sheet"
+   },
+   "notes": "Wired into the game 2026-10-23."
+  },
+  {
+   "id": "monster_sheet_spitter_walk_sheet",
+   "name": "Monster sheet spitter_walk_sheet",
+   "type": "sprite_sheet",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/spitter_walk_sheet.png",
+    "bytes": 1553052,
+    "format": "png",
+    "widthPx": 1920,
+    "heightPx": 1280,
+    "transparent": false,
+    "view": "sheet"
+   },
+   "notes": "Wired into the game 2026-10-23."
+  },
+  {
+   "id": "monster_sheet_strayer_sheet",
+   "name": "Monster sheet strayer_sheet",
+   "type": "sprite_sheet",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/strayer_sheet.png",
+    "bytes": 1254239,
+    "format": "png",
+    "widthPx": 1920,
+    "heightPx": 1280,
+    "transparent": false,
+    "view": "sheet"
+   },
+   "notes": "Wired into the game 2026-10-23."
+  },
+  {
+   "id": "monster_sheet_strayer_walk_sheet",
+   "name": "Monster sheet strayer_walk_sheet",
+   "type": "sprite_sheet",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/strayer_walk_sheet.png",
+    "bytes": 973919,
+    "format": "png",
+    "widthPx": 1920,
+    "heightPx": 1280,
+    "transparent": false,
+    "view": "sheet"
+   },
+   "notes": "Wired into the game 2026-10-23."
+  },
+  {
+   "id": "monster_sheet_brute_walk_sheet",
+   "name": "Monster sheet brute_walk_sheet",
+   "type": "sprite_sheet",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/brute_walk_sheet.png",
+    "bytes": 2684250,
+    "format": "png",
+    "widthPx": 1920,
+    "heightPx": 1280,
+    "transparent": false,
+    "view": "sheet"
+   },
+   "notes": "Wired into the game 2026-10-23."
+  },
+  {
+   "id": "monster_sheet_spitter_walk_sheet",
+   "name": "Monster sheet spitter_walk_sheet",
+   "type": "sprite_sheet",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/spitter_walk_sheet.png",
+    "bytes": 1553052,
+    "format": "png",
+    "widthPx": 1920,
+    "heightPx": 1280,
+    "transparent": false,
+    "view": "sheet"
+   },
+   "notes": "Wired into the game 2026-10-23."
+  },
+  {
+   "id": "monster_sheet_strayer_walk_sheet",
+   "name": "Monster sheet strayer_walk_sheet",
+   "type": "sprite_sheet",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/strayer_walk_sheet.png",
+    "bytes": 973919,
+    "format": "png",
+    "widthPx": 1920,
+    "heightPx": 1280,
+    "transparent": false,
+    "view": "sheet"
+   },
+   "notes": "Wired into the game 2026-10-23."
+  },
+  {
+   "id": "monster_frames_pack_01",
+   "name": "Monster sprite frames (extracted)",
+   "type": "sprite2d",
+   "category": "monster",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/goals/zealandia-game-project/files/monster-sprites/frames",
+    "format": "png",
+    "transparent": true
+   },
+   "notes": "136 transparent PNG frames, bottom-centre anchor."
+  },
+  {
+   "id": "promptbatch_vancouver_buildings",
+   "name": "Vancouver buildings prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/vancouver_buildings.txt",
+    "bytes": 1921,
+    "format": "png"
+   },
+   "notes": "Outputs approved by Han 2026-10-11 (validated reference set)."
+  },
+  {
+   "id": "promptbatch_vancouver_props",
+   "name": "Vancouver props prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/vancouver_props.txt",
+    "bytes": 862,
+    "format": "png"
+   },
+   "notes": ""
+  },
+  {
+   "id": "promptbatch_tokyo_buildings",
+   "name": "Tokyo buildings prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/tokyo_buildings.txt",
+    "bytes": 1843,
+    "format": "png"
+   },
+   "notes": "Generation on Han's GPU PC pending."
+  },
+  {
+   "id": "promptbatch_tokyo_props",
+   "name": "Tokyo props prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/tokyo_props.txt",
+    "bytes": 873,
+    "format": "png"
+   },
+   "notes": "Generation on Han's GPU PC pending."
+  },
+  {
+   "id": "promptbatch_tokyo_archetypes",
+   "name": "Tokyo archetypes prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/tokyo_archetypes.txt",
+    "bytes": 963,
+    "format": "png"
+   },
+   "notes": "Generation on Han's GPU PC pending."
+  },
+  {
+   "id": "promptbatch_timestone",
+   "name": "Time Stone prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/timestone.txt",
+    "bytes": 1370,
+    "format": "png"
+   },
+   "notes": "Produced via room pipeline; prompts retained."
+  },
+  {
+   "id": "promptbatch_zealandia_facilities_buildings",
+   "name": "Zealandia facility buildings prompt batch (front view)",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/zealandia_facilities_buildings.txt",
+    "bytes": 3418,
+    "format": "png"
+   },
+   "notes": "Generation on Han's GPU PC pending."
+  },
+  {
+   "id": "promptbatch_zealandia_facilities_props",
+   "name": "Zealandia facility props prompt batch (front view)",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/zealandia_facilities_props.txt",
+    "bytes": 2007,
+    "format": "png"
+   },
+   "notes": "Generation on Han's GPU PC pending."
+  },
+  {
+   "id": "promptbatch_everplanet_waitemata_buildings",
+   "name": "EverPlanet-pack Waitemata buildings prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/everplanet_waitemata_buildings.txt",
+    "bytes": 3825,
+    "format": "png"
+   },
+   "notes": "Zealandia room production pack e4e8ac8; generation on Han's GPU PC."
+  },
+  {
+   "id": "promptbatch_everplanet_waitemata_props",
+   "name": "EverPlanet-pack Waitemata props prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/everplanet_waitemata_props.txt",
+    "bytes": 3306,
+    "format": "png"
+   },
+   "notes": "Zealandia room production pack e4e8ac8."
+  },
+  {
+   "id": "promptbatch_everplanet_characters",
+   "name": "EverPlanet-pack characters prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/everplanet_characters.txt",
+    "bytes": 3457,
+    "format": "png"
+   },
+   "notes": "Zealandia room production pack e4e8ac8."
+  },
+  {
+   "id": "promptbatch_everplanet_dungeon_entrances",
+   "name": "EverPlanet-pack dungeon entrances prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/everplanet_dungeon_entrances.txt",
+    "bytes": 2974,
+    "format": "png"
+   },
+   "notes": "Zealandia room production pack e4e8ac8."
+  },
+  {
+   "id": "promptbatch_everplanet_dungeon_assets",
+   "name": "EverPlanet-pack dungeon assets prompt batch",
+   "type": "prompt_batch",
+   "category": "facility",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/prompts/everplanet_dungeon_assets.txt",
+    "bytes": 4160,
+    "format": "png"
+   },
+   "notes": "Zealandia room production pack e4e8ac8."
+  },
+  {
+   "id": "promptbatch_skill_fx",
+   "name": "Skill FX prompt batch (39 prompts + runner)",
+   "type": "prompt_batch",
+   "category": "effect",
+   "status": "ready",
+   "source": {
+    "method": "plushy-sdxl"
+   },
+   "visual": {
+    "file": "~/workspace/plushy-ai/run_skill_fx.py",
+    "bytes": 5002,
+    "format": "png"
+   },
+   "notes": "Generation on Han's GPU PC."
+  }
+ ]
+}
