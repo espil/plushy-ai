@@ -1,0 +1,39 @@
+# Ruin village PROPS - all six villages, four signature pieces each
+# Single objects, straight-on front view, transparent background after rembg.
+# Run: python sprites.py --prompts prompts/everplanet_villages_props.txt --style 2.5d --seeds 2 --size 768 --output ./villages_props
+
+# - Nan Madol -
+basalt log bundle, straight-on front view, three dark hexagonal basalt columns tied with rope on a wooden sled, cute stylized fantasy game prop, single object
+canal mooring post, straight-on front view, carved wooden post with rope coil and a small teal lantern, water ripple ring at the base, cute stylized fantasy game prop, single object
+tide offering bowl stand, straight-on front view, stone stand holding a wide carved bowl with shells and clear water, cute stylized fantasy game prop, single object
+woven fish trap basket, straight-on front view, round woven basket trap with a wooden frame mouth, cute stylized fantasy game prop, single object
+
+# - Ha'amonga -
+season sundial slab, straight-on front view, round flat stone with carved sun rays and shadow notches with no letters, cute stylized fantasy game prop, single object
+woven feast mat stack, straight-on front view, rolled woven mats tied with fiber cord beside a carved wooden bowl, cute stylized fantasy game prop, single object
+shell wind ornament pole, straight-on front view, wooden pole with hanging shell strands and small woven fans, cute stylized fantasy game prop, single object
+stone season marker pair, straight-on front view, two short carved standing stones with sun and moon discs kept abstract, cute stylized fantasy game prop, single object
+
+# - Taputapuatea -
+voyaging canoe prow piece, straight-on front view, carved wooden canoe prow with spiral wave patterns, rope lashings, cute stylized fantasy game prop, single object
+conch shell horn stand, straight-on front view, large conch shell resting on a carved wooden stand, cute stylized fantasy game prop, single object
+star stone tablet, straight-on front view, dark stone tablet with carved dot stars and a crescent kept abstract with no letters, cute stylized fantasy game prop, single object
+marae offering bowl pair, straight-on front view, two carved stone bowls with flower petals and clear water, cute stylized fantasy game prop, single object
+
+# - Ahu Tongariki -
+small moai head statue, straight-on front view, chunky stylized moai-inspired stone head with long ears and a solemn face, moss at the base, cute stylized fantasy game prop, single object
+red scoria topknot stone, straight-on front view, round rust red stone cylinder resting on a wooden sledge with rope, cute stylized fantasy game prop, single object
+stone carver tool set, straight-on front view, wooden crate with stone chisels, a mallet and a rope coil, cute stylized fantasy game prop, single object
+dawn marker stone, straight-on front view, short carved standing stone with a sun disc top kept abstract, cute stylized fantasy game prop, single object
+
+# - Leluh -
+dynasty emblem banner stand, straight-on front view, tall wooden stand with a blank deep red banner and carved abstract emblem disc with no letters, cute stylized fantasy game prop, single object
+royal court drum, straight-on front view, large wooden slit drum on a carved stand, two drum sticks, cute stylized fantasy game prop, single object
+canal lantern barge light, straight-on front view, floating wooden lantern raft with two warm paper lanterns, cute stylized fantasy game prop, single object
+stone treasury chest, straight-on front view, heavy carved stone chest with bronze bands and a shell clasp, cute stylized fantasy game prop, single object
+
+# - Pulemelei -
+mound stair lantern pair, straight-on front view, two squat stone lanterns with warm gourd-shaped lights on a shared base, cute stylized fantasy game prop, single object
+summit offering stones, straight-on front view, three small carved offering stones with flower garlands kept simple, cute stylized fantasy game prop, single object
+terraced garden planter, straight-on front view, stepped stone planter with taro-like broad leaves and small flowers, cute stylized fantasy game prop, single object
+ceremonial woven fan stand, straight-on front view, wooden stand holding two large woven fans with abstract sun patterns, cute stylized fantasy game prop, single object

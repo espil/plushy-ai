@@ -1,0 +1,35 @@
+# Ruin village CHARACTERS - the elder and two villagers of each village
+# Original chibi fantasy MMORPG designs only. One character per image,
+# full body. The elders match the game's quest givers: Nahla, Tui, Arii,
+# Hotu, Sra and Fale.
+# Run: python sprites.py --prompts prompts/everplanet_villages_characters.txt --style chibi --seeds 2 --size 512 --output ./villages_characters
+
+# - Nan Madol -
+Elder Nahla, wise canal elder woman, silver hair in a top knot with a shell pin, deep teal woven robe with wave trim, holding a short carved paddle staff, full body standing pose
+canal fisher man of Nan Madol, rolled trousers and a woven vest, holding a woven fish trap, friendly weathered face, full body standing pose
+stone mason girl of Nan Madol, leather gloves, stone chip goggles on her forehead, holding a small basalt chisel, full body standing pose
+
+# - Ha'amonga -
+Elder Tui, season keeper elder man, white beard, woven cloak with sun disc clasp kept abstract, holding a shadow measuring staff, full body standing pose
+fale builder woman of Ha'amonga, woven headband, tapa-toned tunic, holding a coil of fiber rope, full body standing pose
+young season watcher boy of Ha'amonga, holding a small wooden sun marker, curious bright face, full body standing pose
+
+# - Taputapuatea -
+Elder Arii, voyager priest elder man, tall carved staff, dark red and black patterned cloak kept abstract, calm solemn face, full body standing pose
+navigator woman of Taputapuatea, star chart tablet under one arm kept abstract with dots only, deep blue sailing tunic, full body standing pose
+canoe carver man of Taputapuatea, wood shavings on his apron, holding a curved adze, full body standing pose
+
+# - Ahu Tongariki -
+Elder Hotu, dawn watcher elder woman, grey hair in a long braid, rust red woven shawl, holding a carved dawn marker stone, full body standing pose
+stone carver man of Ahu Tongariki, dusty apron, head wrap, holding a stone mallet and chisel, full body standing pose
+quarry runner girl of Ahu Tongariki, messenger sash, holding a rope coil, energetic face, full body standing pose
+
+# - Leluh -
+Elder Sra, court keeper elder woman, elegant silver bun, deep red and gold court robe kept simple, holding a bronze court key, full body standing pose
+canal boatman of Leluh, striped court sash, holding a long polished pole, full body standing pose
+treasury keeper man of Leluh, neat vest with bronze clasps, holding a blank ledger and a shell clasp box, full body standing pose
+
+# - Pulemelei -
+Elder Fale, mound keeper elder man, broad woven cloak, carved summit staff, warm solemn face, full body standing pose
+terrace gardener woman of Pulemelei, flower hair pin, holding a watering gourd and a small basket of seedlings, full body standing pose
+stair warden boy of Pulemelei, holding a small gourd lantern, proud helpful face, full body standing pose

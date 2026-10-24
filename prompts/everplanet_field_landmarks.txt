@@ -1,0 +1,59 @@
+# Field instance LANDMARKS and props - the nine maps between villages
+# Travel in Zealandia is instance hops, not open world. Each segment below
+# is one instanced field map on the route, in order. Three fields carry a
+# dungeon off the road: the Sunken Grotto (Kepirohi leg), Emberdeep
+# (Fautaua leg) and the Drowned Vault (Sopoaga leg). Their entrance prompts
+# live in everplanet_dungeon_entrances.txt; the side-path pieces here lead
+# the eye to them.
+# Single objects, front view, transparent background after rembg.
+# Run: python sprites.py --prompts prompts/everplanet_field_landmarks.txt --style 2.5d --seeds 2 --size 768 --output ./field_landmarks
+
+# - Field 1: Waitemata to Nan Madol - Waikato River crossing and Huka Falls -
+wide plank river bridge, straight-on front view, chunky wooden planks on stone piers with rope rails, cute stylized fantasy game prop, single object
+huka falls wide waterfall, straight-on front view, bright turquoise waterfall pouring over layered rock terraces with foam stones, cute stylized fantasy game landmark, single object
+river rapids rock set, straight-on front view, three wet grey boulders with white foam ribbons between them, cute stylized fantasy game prop, single object
+mist spray rock, straight-on front view, dark wet rock with a soft white mist puff at its base, cute stylized fantasy game prop, single object
+
+# - Field 2: Nan Madol to Ha'amonga, first map - Sokehs Ridge mountain pass -
+ridge pass gate rocks, straight-on front view, two tall weathered grey rock pillars forming a narrow pass gate, wind grass tufts at the base, cute stylized fantasy game prop, single object
+mountain lookout boulder, straight-on front view, broad flat-topped boulder with a small wooden wind flag with no letters, cute stylized fantasy game prop, single object
+pass path stone steps, straight-on front view, chunky stone steps climbing between two mossy rocks, cute stylized fantasy game prop, single object
+
+# - Field 3: Nan Madol to Ha'amonga, second map - Kepirohi Falls, Sunken Grotto side path -
+kepirohi falls waterfall, straight-on front view, slender waterfall dropping over dark basalt into a round green pool, fern clusters at the edges, cute stylized fantasy game landmark, single object
+basalt log stack, straight-on front view, neat pile of dark hexagonal basalt columns beside a path, cute stylized fantasy game prop, single object
+grotto side path stones, straight-on front view, wet stepping stones curving behind a fern screen toward a dark gap, faint teal glow at the end, cute stylized fantasy game prop, single object
+giant fern cluster, straight-on front view, lush green fern fronds in a round cluster with a small mushroom pair, cute stylized fantasy game prop, single object
+
+# - Field 4: Ha'amonga to Taputapuatea - Mount Taranaki -
+mount taranaki snow cone, straight-on front view, one perfect snow-capped volcanic cone mountain with green lower slopes, cute stylized fantasy game landmark, single object
+alpine rock pair, straight-on front view, two grey alpine boulders with small snow caps and alpine grass tufts, cute stylized fantasy game prop, single object
+snowfield path markers, straight-on front view, two short wooden poles with blank coral flags marking a path, cute stylized fantasy game prop, single object
+
+# - Field 5: Taputapuatea to Ahu Tongariki, first map - Fautaua Falls gorge, Emberdeep side path -
+fautaua gorge cliff left, straight-on front view, tall red brown gorge cliff wall with layered strata and hanging vines, cute stylized fantasy game prop, single object
+fautaua gorge cliff right, straight-on front view, tall red brown gorge cliff wall with a waterfall ribbon at its edge, cute stylized fantasy game prop, single object
+gorge falls pool rocks, straight-on front view, dark wet boulders around a small plunge pool with foam, cute stylized fantasy game prop, single object
+ember side path stones, straight-on front view, blackened stepping stones curving toward a warm orange glow between rocks, cute stylized fantasy game prop, single object
+
+# - Field 6: Taputapuatea to Ahu Tongariki, second map - Mount Finkol -
+mount finkol volcano, straight-on front view, dark basalt volcanic cone with a wide crater rim and faint smoke curl, cute stylized fantasy game landmark, single object
+crater rim rock set, straight-on front view, jagged dark rim rocks with ash dusting and one glowing crack, cute stylized fantasy game prop, single object
+ash field stones, straight-on front view, pale ash-covered stones with a small hardy green shrub, cute stylized fantasy game prop, single object
+
+# - Field 7: Ahu Tongariki to Leluh - Rano Raraku quarry -
+rano raraku moai head half buried, straight-on front view, huge chunky stylized moai-inspired stone head tilted in a grassy quarry slope, cute stylized fantasy game landmark, single object
+quarry moai head pair variants, straight-on front view, two smaller stylized moai-inspired stone heads at different tilts on a slope, cute stylized fantasy game prop, single object
+carving scaffold, straight-on front view, wooden scaffold frame with rope lifts beside a blank stone block, cute stylized fantasy game prop, single object
+quarry slope rock set, straight-on front view, warm brown slope rocks with grass tufts and scattered stone chips, cute stylized fantasy game prop, single object
+
+# - Field 8: Leluh to Pulemelei, first map - Sopoaga Falls, Drowned Vault side path -
+sopoaga falls waterfall, straight-on front view, broad white waterfall over a green rock face into a lotus pond, cute stylized fantasy game landmark, single object
+wooden observation deck, straight-on front view, small wooden viewing platform on posts with a rope rail and a blank sign board, cute stylized fantasy game prop, single object
+lotus pond rock set, straight-on front view, smooth pond stones with lotus leaves and two pink lotus flowers, cute stylized fantasy game prop, single object
+drowned side path stones, straight-on front view, mossy stepping stones sinking into still water toward a faint blue glow, cute stylized fantasy game prop, single object
+
+# - Field 9: Leluh to Pulemelei, second map - Rano Kau crater lake -
+rano kau crater rim rocks, straight-on front view, curved set of warm crater rim rocks with a gap looking over still water, cute stylized fantasy game landmark, single object
+crater lake reed bundles, straight-on front view, two bundles of tall lakeshore reeds with seed heads, cute stylized fantasy game prop, single object
+lake viewing stones, straight-on front view, three flat smooth stones at a shore edge with gentle ripple rings, cute stylized fantasy game prop, single object

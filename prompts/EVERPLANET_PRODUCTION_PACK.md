@@ -1,7 +1,9 @@
 # EverPlanet-inspired Zealandia production pack
 
-This pack prepares original Plushy AI source sprites for Waitematā, its
-people, the three dungeon entrances and the dungeon interiors. The mood is a
+This pack prepares original Plushy AI source sprites for the whole
+Zealandia route: Waitematā (the starting village only), the six ruin
+villages, the nine instanced field maps between them, the three dungeon
+entrances and the dungeon interiors. The mood is a
 bright, chunky, cute fantasy MMORPG world. Every design must stay original:
 do not copy an EverPlanet, MapleStory or other game asset, character,
 building, costume or layout.
@@ -19,6 +21,10 @@ as the 2D source for the separate Meshy image-to-3D step.
 | `everplanet_characters.txt` | Player travellers, Waitematā villagers, Lunaris, Ahi, Huka and Espil | `object` | `chibi` | 512 |
 | `everplanet_dungeon_entrances.txt` | Sunken Grotto, Emberdeep, Drowned Vault and generic ruin gates | `building` | `2.5d` | 768 |
 | `everplanet_dungeon_assets.txt` | Doors, exits, lore stele, themed set pieces, chests, guardians and creatures | `object` | `2.5d` | 768 |
+| `everplanet_villages_buildings.txt` | The six ruin villages: landmark structures, elder halls and houses for Nan Madol, Ha'amonga, Taputapuatea, Ahu Tongariki, Leluh and Pulemelei | `building` | `2.5d` | 768 |
+| `everplanet_villages_props.txt` | Four signature props per ruin village | `object` | `2.5d` | 768 |
+| `everplanet_villages_characters.txt` | The elder and two villagers of each ruin village | `object` | `chibi` | 512 |
+| `everplanet_field_landmarks.txt` | Landmarks and path props for the nine field instances, in route order, including the side paths to the three dungeons | `object` | `2.5d` | 768 |
 
 ## Style locks
 
@@ -31,11 +37,10 @@ as the 2D source for the separate Meshy image-to-3D step.
 
 ## Recommended production order
 
-• Generate the Waitematā buildings first and choose the village silhouette.
-• Generate the matching props second so signs, stalls and dressing match the chosen buildings.
-• Generate the dungeon entrances third, two seeds each, and pick one hero entrance per dungeon.
-• Generate dungeon assets fourth, starting with the boss door, exit portal, lore stele and ruin heart pedestal.
-• Generate characters last, because outfit colors should harmonize with the chosen village palette.
+• Waitematā is only the starting village. Generate its buildings first and choose the starting-village silhouette, then its props and people.
+• Then work along the route, one village at a time: Nan Madol, Ha'amonga, Taputapuatea, Ahu Tongariki, Leluh, Pulemelei. For each, generate its buildings, props and characters before moving on.
+• Generate each field map's landmarks right after the village it leads to, so a segment reads as one journey. The dungeon side-path pieces sit in the field file of their leg: Kepirohi (Sunken Grotto), Fautaua (Emberdeep), Sopoaga (Drowned Vault).
+• Generate the dungeon entrances with their legs, two seeds each, and pick one hero entrance per dungeon. Generate dungeon assets after the entrances, starting with the boss door, exit portal, lore stele and ruin heart pedestal.
 • Keep rejected generations in the batch folder until selection is finished. The `manifest.json` records the prompt and seed for every file.
 
 ## OneDrive output layout
@@ -47,6 +52,10 @@ Use this tree on the GPU PC:
 • `OneDrive\Plushy AI\outputs\zealandia_characters`
 • `OneDrive\Plushy AI\outputs\dungeon_entrances`
 • `OneDrive\Plushy AI\outputs\dungeon_assets`
+• `OneDrive\Plushy AI\outputs\villages_buildings`
+• `OneDrive\Plushy AI\outputs\villages_props`
+• `OneDrive\Plushy AI\outputs\villages_characters`
+• `OneDrive\Plushy AI\outputs\field_landmarks`
 
 Share the parent `Plushy AI` folder from OneDrive with the Muse team.
 
@@ -90,6 +99,30 @@ docker run --rm --gpus all -v "${PWD}:/app" -v "${OutRoot}:/app/plushy_outputs" 
 
 ```powershell
 docker run --rm --gpus all -v "${PWD}:/app" -v "${OutRoot}:/app/plushy_outputs" -v plushy-hf:/root/.cache/huggingface plushy-ai python sprites.py --prompts /app/prompts/everplanet_dungeon_assets.txt --style 2.5d --seeds 2 --size 768 --output /app/plushy_outputs/dungeon_assets
+```
+
+### Ruin village buildings
+
+```powershell
+docker run --rm --gpus all -v "${PWD}:/app" -v "${OutRoot}:/app/plushy_outputs" -v plushy-hf:/root/.cache/huggingface plushy-ai python sprites.py --prompts /app/prompts/everplanet_villages_buildings.txt --subject-type building --style 2.5d --seeds 2 --size 768 --output /app/plushy_outputs/villages_buildings
+```
+
+### Ruin village props
+
+```powershell
+docker run --rm --gpus all -v "${PWD}:/app" -v "${OutRoot}:/app/plushy_outputs" -v plushy-hf:/root/.cache/huggingface plushy-ai python sprites.py --prompts /app/prompts/everplanet_villages_props.txt --style 2.5d --seeds 2 --size 768 --output /app/plushy_outputs/villages_props
+```
+
+### Ruin village characters
+
+```powershell
+docker run --rm --gpus all -v "${PWD}:/app" -v "${OutRoot}:/app/plushy_outputs" -v plushy-hf:/root/.cache/huggingface plushy-ai python sprites.py --prompts /app/prompts/everplanet_villages_characters.txt --style chibi --seeds 2 --size 512 --output /app/plushy_outputs/villages_characters
+```
+
+### Field landmarks (the nine maps between villages)
+
+```powershell
+docker run --rm --gpus all -v "${PWD}:/app" -v "${OutRoot}:/app/plushy_outputs" -v plushy-hf:/root/.cache/huggingface plushy-ai python sprites.py --prompts /app/prompts/everplanet_field_landmarks.txt --style 2.5d --seeds 2 --size 768 --output /app/plushy_outputs/field_landmarks
 ```
 
 ## Studio use from the laptop

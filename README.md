@@ -33,14 +33,19 @@ No cloud, no per-generation fees. Built for billboard sprites in game maps
 
 ## Zealandia production prompt pack
 
-The EverPlanet-inspired original production set for Waitematā and the three
-dungeons is documented in `prompts/EVERPLANET_PRODUCTION_PACK.md`.
+The EverPlanet-inspired original production set for the whole route -
+Waitematā, the six ruin villages, the nine field maps and the three
+dungeons - is documented in `prompts/EVERPLANET_PRODUCTION_PACK.md`.
 
 • `prompts/everplanet_waitemata_buildings.txt`
 • `prompts/everplanet_waitemata_props.txt`
 • `prompts/everplanet_characters.txt`
 • `prompts/everplanet_dungeon_entrances.txt`
 • `prompts/everplanet_dungeon_assets.txt`
+• `prompts/everplanet_villages_buildings.txt`
+• `prompts/everplanet_villages_props.txt`
+• `prompts/everplanet_villages_characters.txt`
+• `prompts/everplanet_field_landmarks.txt`
 
 Run `git pull` on the GPU PC and the prompt files are ready. The Studio
 launcher mounts the pulled repo into the container, so prompt updates are

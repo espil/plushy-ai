@@ -1,0 +1,51 @@
+# Ruin village BUILDINGS and landmark structures - all six villages
+# Waitemata is only the starting village. Each ruin village below needs its
+# own produced set, in route order: Nan Madol, Ha'amonga, Taputapuatea,
+# Ahu Tongariki, Leluh, Pulemelei. Original designs grounded in each site's
+# real story, in the same bright chunky fantasy MMORPG mood as the
+# Waitemata set. Do not copy any real-world photograph or game asset.
+# VIEW LOCK: straight-on front elevation. Run with --subject-type building
+# and --style 2.5d.
+# Run: python sprites.py --prompts prompts/everplanet_villages_buildings.txt --subject-type building --style 2.5d --seeds 2 --size 768 --output ./villages_buildings
+
+# - Nan Madol: the stone city on the water, walls of basalt logs -
+canal islet house, dark basalt log platform rising from green water, small wooden house with a steep thatch roof on top, rope railing, hanging lantern, cute stylized fantasy game building
+elder islet hall of Nan Madol, wide basalt log foundation islet, open wooden hall with carved posts, layered thatch roof, two canal lanterns at the steps, cute stylized fantasy game building
+canal gate structure, two basalt log towers joined by a wooden beam over a water channel, hanging wave emblem banner with no letters, cute stylized fantasy game structure
+tide shrine hut, small stone and timber shrine on a round basalt islet, spiral wave carvings, offering bowl shelf, teal crystal lantern, cute stylized fantasy game building
+canal warehouse islet, basalt log platform with a low wooden storehouse, stacked crates and coiled rope at the front, slanted shingle roof, cute stylized fantasy game building
+
+# - Ha'amonga: the trilithon, gate of the seasons -
+haamonga trilithon monument, two massive upright stone pillars with one long lintel stone across the top, small carved season notches, grass mound base, cute stylized fantasy game landmark structure
+season gate shrine, small stone pavilion with a round sun disc carving, twin shadow posts, woven banner poles with blank banners, cute stylized fantasy game building
+elder hall of Ha'amonga, oval thatched fale hall on a low stone platform, curved roof ridge, carved wooden posts, open front with woven mats, cute stylized fantasy game building
+stone observatory platform, wide flat stone terrace with three short standing stones and a sun shadow marker slab, cute stylized fantasy game structure
+fale village house, oval thatched roof house with woven panel walls, low wooden platform, hanging shell curtain at the door, cute stylized fantasy game building
+
+# - Taputapuatea: the great marae, altar of the voyagers -
+great marae platform, wide stepped coral stone platform with a row of upright stone backrests, carved altar slab at the centre, cute stylized fantasy game landmark structure
+voyager canoe house, long open boathouse with a high curved thatch roof, a wooden voyaging canoe resting inside, rope coils and paddle racks, cute stylized fantasy game building
+star compass pavilion, round open pavilion with a stone compass ring floor, eight short direction stones with no letters, small roof on carved posts, cute stylized fantasy game structure
+elder hall of Taputapuatea, long ceremonial house with a steep thatch roof, carved red and black post patterns kept abstract, woven front screen, cute stylized fantasy game building
+offering shrine platform, small raised stone platform with carved bowls, a conch shell stand and feather-free woven ornaments, cute stylized fantasy game structure
+
+# - Ahu Tongariki: the platform of fifteen watchers -
+ahu platform with moai statues, long stone platform holding five chunky stylized moai-inspired stone statues with long ears and solemn faces, red stone topknot on one, cute stylized fantasy game landmark structure
+sunrise watch terrace, low wide stone terrace with a carved dawn marker stone and two short guardian statues, cute stylized fantasy game structure
+elder hall of Ahu Tongariki, boat-shaped long house with an inverted hull roof line, stone foundation, carved wooden door, cute stylized fantasy game building
+stone carver shelter, open quarry workshop hut with a half-finished chunky stone statue head under a thatch lean-to, chisel marks, cute stylized fantasy game building
+quarry side storehouse, squat stone and timber hut with stacked red scoria stones and rope-wrapped bundles, cute stylized fantasy game building
+
+# - Leluh: the stone city of kings on the lagoon -
+royal court platform of Leluh, grand raised stone court with high basalt walls, a carved throne-back stone and twin court lanterns, cute stylized fantasy game landmark structure
+canal side stone house, two-story stone house with timber upper floor, arched doorway opening onto a canal step, hanging lantern, cute stylized fantasy game building
+dynasty memorial wall, tall stone wall with a row of carved abstract dynasty emblems with no letters, small offering niches, moss at the base, cute stylized fantasy game structure
+elder hall of Leluh, stone hall with a heavy timber roof, wide court steps, carved wave and sun post caps kept abstract, cute stylized fantasy game building
+lagoon watch post, short square stone tower with a wooden lookout cap and bell, rising beside a canal edge, cute stylized fantasy game building
+
+# - Pulemelei: the great stepped mound -
+pulemelei stepped mound, huge three-tier stepped stone pyramid mound with a wide front stair, grass tufts on the terraces, small summit platform, cute stylized fantasy game landmark structure
+summit shrine of Pulemelei, small dark stone doorway shrine on a flat summit, two blank-faced guardian stones, golden light seam, cute stylized fantasy game building
+elder hall of Pulemelei, broad thatched hall at the mound base, heavy carved posts, woven wall panels, stone step entrance, cute stylized fantasy game building
+mound stair gate, two chunky stone gate posts with a carved beam at the foot of wide stone stairs, blank banner poles, cute stylized fantasy game structure
+terraced village house, stone terrace house with a thatch roof, front garden steps, hanging gourd lanterns, cute stylized fantasy game building
