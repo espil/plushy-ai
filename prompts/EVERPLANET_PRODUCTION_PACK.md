@@ -43,31 +43,31 @@ as the 2D source for the separate Meshy image-to-3D step.
 • Generate the dungeon entrances with their legs, two seeds each, and pick one hero entrance per dungeon. Generate dungeon assets after the entrances, starting with the boss door, exit portal, lore stele and ruin heart pedestal.
 • Keep rejected generations in the batch folder until selection is finished. The `manifest.json` records the prompt and seed for every file.
 
-## OneDrive output layout
+## Local output layout
 
 Use this tree on the GPU PC:
 
-• `OneDrive\Plushy AI\outputs\waitemata_buildings`
-• `OneDrive\Plushy AI\outputs\waitemata_props`
-• `OneDrive\Plushy AI\outputs\zealandia_characters`
-• `OneDrive\Plushy AI\outputs\dungeon_entrances`
-• `OneDrive\Plushy AI\outputs\dungeon_assets`
-• `OneDrive\Plushy AI\outputs\villages_buildings`
-• `OneDrive\Plushy AI\outputs\villages_props`
-• `OneDrive\Plushy AI\outputs\villages_characters`
-• `OneDrive\Plushy AI\outputs\field_landmarks`
+• `outputs\waitemata_buildings`
+• `outputs\waitemata_props`
+• `outputs\zealandia_characters`
+• `outputs\dungeon_entrances`
+• `outputs\dungeon_assets`
+• `outputs\villages_buildings`
+• `outputs\villages_props`
+• `outputs\villages_characters`
+• `outputs\field_landmarks`
 
-Share the parent `Plushy AI` folder from OneDrive with the Muse team.
+Everything stays in the repo's local `outputs` tree on the GPU PC.
 
 ## Batch commands
 
 Run these on the GPU PC in PowerShell from the repo folder. The commands
 mount the pulled repo, so they use the newest prompt files without waiting
-for a Docker image rebuild. They also mount the OneDrive output tree.
+for a Docker image rebuild. They also mount the local output tree.
 
 ```powershell
 git pull
-$OutRoot = Join-Path $env:OneDrive "Plushy AI\outputs"
+$OutRoot = Join-Path $PWD "outputs"
 New-Item -ItemType Directory -Force $OutRoot | Out-Null
 ```
 
@@ -130,8 +130,8 @@ docker run --rm --gpus all -v "${PWD}:/app" -v "${OutRoot}:/app/plushy_outputs" 
 • Start `start-gui.bat` on the RTX 4060 PC and leave the PC and Docker running.
 • On the laptop, open `http://<GPU PC LAN IP>:8000/studio` on the same network.
 • Paste a single line from any prompt file into the Studio when testing one design before a full batch.
-• Studio results land directly in the OneDrive output folder selected by the launcher.
-• Use the Studio gallery or OneDrive to review the shared results.
+• Studio results land directly in the local output folder selected by the launcher.
+• Use the Studio gallery to review the results.
 
 ## Selection check
 

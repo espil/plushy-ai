@@ -1,14 +1,13 @@
 # Plushy AI - Sprite Runbook (RTX 4060, Windows)
 
 Goal: generate real transparent-PNG sprites on the GPU PC, send prompts
-from a laptop on the same network, and collect the results in OneDrive.
+from a laptop on the same network, and collect the results locally.
 
 ## 0. Prerequisites
 
 • Docker Desktop for Windows, using the WSL2 backend
 • NVIDIA drivers installed on Windows
 • About 15 GB free disk for Docker layers and the one-time SDXL-Turbo download
-• OneDrive signed in and syncing on the GPU PC
 • Close Ollama and GPU-heavy browser tabs before generating - the RTX 4060 has 8 GB VRAM, which is enough for SDXL-Turbo when other GPU work is closed
 
 Verify the GPU is visible to Docker in PowerShell:
@@ -45,9 +44,9 @@ Double-click `start-gui.bat`, or run it from PowerShell:
 • If the laptop cannot connect, allow Docker Desktop or TCP port 8000 through Windows Firewall on the Private network.
 • There is no login on the LAN server. Use it only on a trusted network and do not forward port 8000 to the internet.
 
-## 3. Output folder and OneDrive sharing
+## 3. Output folder (local)
 
-The Studio writes to `%OneDrive%\Plushy AI\outputs` by default. The launcher
+The Studio writes to the repo's `outputs` folder by default. The launcher
 prints the exact active folder before starting.
 
 To use a different folder for one launch, set it before running the launcher:
@@ -57,9 +56,8 @@ $env:PLUSHY_OUTPUT_DIR = "D:\PlushyOutputs"
 .\start-gui.bat
 ```
 
-Share the `Plushy AI` folder in OneDrive with the Muse team. Result PNGs
-remain in the folder when old job records expire. Batch folders and
-`manifest.json` files placed under the same tree also sync to OneDrive.
+Result PNGs remain in the folder when old job records expire. Batch
+folders and `manifest.json` files live under the same local tree.
 
 ## 4. First sprite from the command line
 
@@ -77,11 +75,11 @@ runs reuse it.
 
 Read `prompts/EVERPLANET_PRODUCTION_PACK.md` first. It gives the file order,
 style locks and output subfolders. The PowerShell pattern below mounts the
-pulled repo and the OneDrive output tree, so the batch uses the newest
+pulled repo and its local output tree, so the batch uses the newest
 prompts and the PNGs sync after generation.
 
 ```powershell
-$OutRoot = Join-Path $env:OneDrive "Plushy AI\outputs"
+$OutRoot = Join-Path $PWD "outputs"
 New-Item -ItemType Directory -Force $OutRoot | Out-Null
 
 docker run --rm --gpus all `
@@ -104,5 +102,5 @@ Repeat with the other prompt files and commands from the production pack.
 | CUDA out of memory | Close Ollama and GPU-heavy apps; lower the batch size to 512 or 256 |
 | Laptop cannot open the Studio | Check both machines are on the same LAN, the GPU PC is awake, Docker is running, and Windows Firewall allows port 8000 on Private networks |
 | New prompt file is missing in a one-off Docker run | Mount the repo with `-v "${PWD}:/app"` as in section 5, or rebuild the image |
-| OneDrive does not show new files | Confirm OneDrive is signed in, syncing is not paused, and the launcher printed the expected OneDrive output folder |
+| New files do not appear in outputs | Confirm the launcher printed the expected local output folder and that the batch used the same folder |
 | Blank or white sprite | Keep the prompt concrete, for example "a pine tree" or "a red fire hydrant" |

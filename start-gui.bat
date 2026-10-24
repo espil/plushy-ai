@@ -9,9 +9,8 @@ REM                 The laptop can send prompts from its browser while
 REM                 this PC stays on. The gallery shows everything in
 REM                 the shared output folder.
 REM
-REM Outputs: by default PNGs are written to
-REM   %OneDrive%\Plushy AI\outputs
-REM so they sync to OneDrive and can be shared with the Muse team.
+REM Outputs: by default PNGs are written to this repo's outputs folder
+REM   (local only, nothing is synced anywhere).
 REM Set PLUSHY_OUTPUT_DIR before running to use a different folder.
 REM
 REM The repo folder is mounted into the container, so after a git pull
@@ -48,8 +47,6 @@ if errorlevel 1 (
 
 if defined PLUSHY_OUTPUT_DIR (
     set "HOST_OUTPUT_DIR=%PLUSHY_OUTPUT_DIR%"
-) else if defined OneDrive (
-    set "HOST_OUTPUT_DIR=%OneDrive%\Plushy AI\outputs"
 ) else (
     set "HOST_OUTPUT_DIR=%CD%\outputs"
 )
@@ -62,8 +59,7 @@ echo   On this PC:    http://localhost:8000/studio
 for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4"') do echo   On a laptop:   http://%%a:8000/studio  (same LAN)
 echo.
 echo   Keep this window and Docker Desktop running while the laptop works.
-echo   Generated PNGs are saved to the output folder above. If it is the
-echo   OneDrive folder, keep OneDrive signed in and syncing to share them.
+echo   Generated PNGs are saved to the local output folder above.
 echo   Press CTRL+C here to stop the server.
 echo.
 timeout /t 3 >nul

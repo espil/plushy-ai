@@ -26,10 +26,8 @@ Run locally (mock placeholders, no GPU):
 Run with GPU (docker):
   docker build -t plushy-ai . && docker run --gpus all -p 8000:8000 plushy-ai
 
-Outputs: PLUSHY_OUTPUT_DIR wins when set. On a Windows PC without it, the
-default is "<OneDrive>/Plushy AI/outputs" when Windows exposes a OneDrive
-folder, so generations sync to OneDrive and can be shared from there.
-Otherwise outputs stay in the repo's local outputs folder.
+Outputs: PLUSHY_OUTPUT_DIR wins when set. Otherwise outputs stay in the
+repo's local outputs folder.
 """
 
 from __future__ import annotations
@@ -58,17 +56,12 @@ def _resolve_output_dir() -> Path:
     """Where generated PNGs land.
 
     PLUSHY_OUTPUT_DIR is the explicit override (the Docker launcher points
-    it at the mounted /app/outputs). On Windows, fall back to the user's
-    OneDrive folder so results sync off the GPU PC and can be shared with
-    the Muse team from OneDrive. Anywhere else, keep the repo outputs.
+    it at the mounted /app/outputs). Otherwise outputs stay in the repo's
+    local outputs folder.
     """
     configured = os.getenv("PLUSHY_OUTPUT_DIR")
     if configured:
         return Path(configured).expanduser()
-    for env_name in ("OneDrive", "OneDriveConsumer", "OneDriveCommercial"):
-        root = os.getenv(env_name)
-        if root:
-            return Path(root) / "Plushy AI" / "outputs"
     return BASE_DIR / "outputs"
 
 
@@ -242,8 +235,8 @@ async def _worker(worker_id: int):
 async def _janitor():
     """Expire job records older than JOB_TTL_SEC.
 
-    Result PNGs are kept: the output folder doubles as the shared archive
-    (OneDrive on Han's PC), and /api/outputs lists what is on disk. Only
+    Result PNGs are kept: the output folder doubles as the local archive
+    on Han's PC, and /api/outputs lists what is on disk. Only
     the in-memory record and any uploaded img2img source are removed.
     Manual DELETE /api/job/{job_id} still removes that job's result.
     """

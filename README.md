@@ -66,23 +66,21 @@ git pull
 • The GPU PC, Docker Desktop and the launcher window must stay on.
 • If the laptop cannot connect, allow Docker Desktop or TCP port 8000 through Windows Firewall for the Private network.
 
-## Output location: OneDrive
+## Output location: local
 
 Studio generations are written to the first matching location below.
 
 • `PLUSHY_OUTPUT_DIR`, when set before launch
-• `%OneDrive%\Plushy AI\outputs` on the Windows GPU PC
-• The repo's local `outputs` folder as a fallback
+• The repo's local `outputs` folder
 
-The launcher prints the active output folder before the server starts. Keep
-OneDrive signed in and syncing on the GPU PC, then share the `Plushy AI`
-folder from OneDrive with the Muse team. The Studio gallery reads the same
-folder through `/api/outputs`, so the laptop can also browse and download the
-results. Result PNGs are not deleted when old job records expire.
+The launcher prints the active output folder before the server starts.
+Outputs stay on the GPU PC (local only). The Studio gallery reads the same
+folder through `/api/outputs`, so the laptop can also browse and download
+the results. Result PNGs are not deleted when old job records expire.
 
 Batch CLI runs use the folder passed to `--output`; the production pack
-shows PowerShell commands that place each batch under the same OneDrive
-`Plushy AI\outputs` tree.
+shows PowerShell commands that place each batch under the same local
+`outputs` tree.
 
 ### One-off sprite (fastest path)
 
