@@ -49,7 +49,7 @@
 </style>
 </head>
 <body>
-<h1>🧸 Plushy AI Studio <small>text → sprite</small></h1>
+<h1>🧸 Plushy AI Studio <small>text → sprite · image → 3D model</small></h1>
 
 <div class="card">
   <label class="full">Prompt
@@ -104,6 +104,26 @@
   </div>
   <div id="jobs"></div>
   <div class="error" id="error"></div>
+</div>
+
+<div class="card">
+  <h3>Image → 3D model <span style="color:#666; font-weight:normal; font-size:.85rem">(SF3D, local GPU - one image, textured GLB)</span></h3>
+  <label class="full">Source image <span style="color:#666">(a clean single-object image on a plain background works best)</span>
+    <input type="file" id="m3dFile" accept="image/*">
+  </label>
+  <div class="row">
+    <label>Texture
+      <select id="m3dTex">
+        <option value="512">512 px</option>
+        <option value="1024" selected>1024 px</option>
+        <option value="2048">2048 px</option>
+      </select>
+    </label>
+    <button class="go" id="go3d">Make 3D model</button>
+  </div>
+  <div id="jobs3d"></div>
+  <div class="error" id="error3d"></div>
+  <div class="note" style="margin-top:.6rem">Mock mode produces a clearly stamped *_MOCK.glb placeholder, never a silent fake. The first real run downloads the SF3D model (~3GB) once.</div>
 </div>
 
 <div class="card">
@@ -230,7 +250,8 @@ async function loadExisting() {
     if (!r.ok) return;
     const { outputs } = await r.json();
     for (const o of outputs.slice().reverse()) {
-      addToGalleryUrl(o.url, o.name.replace(/\.sprite\.png$/, ''), o.name);
+      if (o.kind === 'glb') addToGalleryGlbUrl(o.url, o.name);
+      else addToGalleryUrl(o.url, o.name.replace(/\.sprite\.png$/, ''), o.name);
     }
   } catch (e) { /* gallery just stays empty */ }
 }
@@ -254,6 +275,83 @@ function addToGalleryUrl(url, job_id, label) {
   cap.append(span, a);
   fig.append(img, cap);
   $('gallery').prepend(fig);
+}
+
+function addToGalleryGlbUrl(url, label) {
+  const empty = document.querySelector('#gallery .empty');
+  if (empty) empty.remove();
+  const fig = document.createElement('figure');
+  const box = document.createElement('div');
+  box.textContent = '🧊 GLB 3D model';
+  box.style.cssText = 'aspect-ratio:1; display:flex; align-items:center; justify-content:center; color:#9db8dd; font-size:1.05rem; background:#18222e; text-align:center; padding:0 .6rem;';
+  const cap = document.createElement('figcaption');
+  const span = document.createElement('span');
+  span.textContent = label || '';
+  span.style.overflow = 'hidden'; span.style.textOverflow = 'ellipsis';
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = label || 'plushy-model.glb';
+  a.textContent = 'download';
+  cap.append(span, a);
+  fig.append(box, cap);
+  $('gallery').prepend(fig);
+}
+
+$('go3d').addEventListener('click', async () => {
+  $('error3d').textContent = '';
+  const f = $('m3dFile').files[0];
+  if (!f) { $('error3d').textContent = 'Pick a source image first.'; return; }
+  $('go3d').disabled = true;
+  try { await runModel3D(f, parseInt($('m3dTex').value)); }
+  finally { $('go3d').disabled = false; }
+});
+
+async function runModel3D(file, tex) {
+  const card = document.createElement('div');
+  card.className = 'jobcard';
+  const label = document.createElement('div');
+  label.className = 'joblabel';
+  label.textContent = '3D model — queued';
+  const prog = document.createElement('div');
+  prog.className = 'progress';
+  const bar = document.createElement('div');
+  bar.className = 'bar';
+  prog.appendChild(bar);
+  const status = document.createElement('div');
+  status.className = 'status';
+  card.append(label, prog, status);
+  $('jobs3d').prepend(card);
+
+  try {
+    const fd = new FormData();
+    fd.append('image', file);
+    fd.append('texture_resolution', tex);
+    const r = await fetch('/api/model3d', { method: 'POST', body: fd });
+    if (!r.ok) {
+      const t = await r.text();
+      throw new Error('request failed: HTTP ' + r.status + ' ' + t.slice(0, 200));
+    }
+    const { job_id } = await r.json();
+    let lastMessage = '';
+    for (;;) {
+      const s = await (await fetch('/api/status/' + job_id)).json();
+      bar.style.width = Math.round((s.progress || 0) * 100) + '%';
+      label.textContent = '3D model — ' + s.status;
+      status.textContent = s.message || '';
+      lastMessage = s.message || '';
+      if (s.status === 'completed') break;
+      if (s.status === 'failed' || s.status === 'cancelled')
+        throw new Error('job ' + s.status + (s.error ? ': ' + s.error : ''));
+      await sleep(1000);
+    }
+    addToGalleryGlbUrl('/api/result/' + job_id,
+      (lastMessage.includes('MOCK') ? 'MOCK — ' : '') + 'plushy-model-' + job_id + '.glb');
+    card.remove();
+  } catch (e) {
+    label.textContent = '3D model — failed';
+    status.textContent = String(e.message || e);
+    status.style.color = '#f66';
+  }
 }
 
 loadExisting();

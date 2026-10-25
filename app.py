@@ -7,6 +7,7 @@ ready as billboard sprites in a game engine. No cloud, your GPU.
 Endpoints:
   POST /api/sprite        → 202 + job_id (JSON: prompt, seed, size, steps)
   POST /api/img2img       → 202 + job_id (multipart: image + prompt + strength)
+  POST /api/model3d       → 202 + job_id (multipart: image) -> textured GLB
   GET  /api/status/{job_id}
   GET  /api/result/{job_id} → download the transparent .PNG
   GET  /api/outputs          → list sprites already on disk (newest first)
@@ -90,7 +91,8 @@ class Job:
     steps: int = 4
     negative_prompt: Optional[str] = None
     style: str = "default"
-    mode: str = "t2i"                      # "t2i" | "i2i"
+    mode: str = "t2i"                      # "t2i" | "i2i" | "m3d"
+    kind: str = "sprite"                   # "sprite" | "model3d"
     init_image: Optional[Path] = None      # uploaded base image (i2i)
     strength: float = 0.6                  # img2img strength (i2i)
     status: JobStatus = JobStatus.QUEUED
@@ -107,6 +109,7 @@ jobs: dict[str, Job] = {}
 job_queue: asyncio.Queue[str] = asyncio.Queue()
 _workers: list[asyncio.Task] = []
 _sprite_pipeline = None
+_model3d_pipeline = None
 
 
 def _get_sprite_pipeline():
@@ -115,6 +118,24 @@ def _get_sprite_pipeline():
         from pipeline_sprite import SpritePipeline
         _sprite_pipeline = SpritePipeline()
     return _sprite_pipeline
+
+
+def _get_model3d_pipeline():
+    global _model3d_pipeline
+    if _model3d_pipeline is None:
+        from pipeline_3d import Model3DPipeline
+        _model3d_pipeline = Model3DPipeline()
+    return _model3d_pipeline
+
+
+def _model3d_health() -> dict:
+    try:
+        from pipeline_3d import SF3D_MODEL, engine_installed
+        return {"engine": "sf3d", "model": SF3D_MODEL, "mock": MOCK,
+                "installed": engine_installed()}
+    except Exception as e:
+        return {"engine": "sf3d", "installed": False,
+                "error": f"{type(e).__name__}: {e}"}
 
 
 # ---------------------------------------------------------------------------
@@ -178,11 +199,16 @@ async def _worker(worker_id: int):
         job.status = JobStatus.PROCESSING
         job.started_at = time.time()
         job.message = "processing"
-        log.info("worker-%d picked up sprite job %s", worker_id, job_id)
+        log.info("worker-%d picked up job %s (kind=%s)", worker_id, job_id, job.kind)
 
         def _progress(p: float, msg: str):
             job.progress = p
             job.message = msg
+
+        if job.kind == "model3d":
+            await _run_model3d_job(job, _progress)
+            job_queue.task_done()
+            continue
 
         try:
             from pipeline_sprite import SpriteOptions
@@ -230,6 +256,37 @@ async def _worker(worker_id: int):
         finally:
             job.finished_at = time.time()
             job_queue.task_done()
+
+
+async def _run_model3d_job(job: Job, progress):
+    """Execute one image-to-3D job (SF3D). Mirrors the sprite worker's
+    error handling; never raises except CancelledError."""
+    try:
+        from pipeline_3d import Model3DOptions
+        pipe = _get_model3d_pipeline()
+        opts = Model3DOptions(texture_resolution=job.size)
+        dest = OUTPUT_DIR / f"{job.job_id}.model3d.glb"
+        t0 = time.time()
+        loop = asyncio.get_running_loop()
+        actual, stats = await loop.run_in_executor(
+            None, pipe.image_to_glb, job.init_image, dest, opts, progress)
+        job.result_path = actual
+        job.status = JobStatus.COMPLETED
+        job.progress = 1.0
+        label = "MOCK placeholder (not a real model)" if stats.get("mock") else "model"
+        job.message = f"{label} done in {time.time() - t0:.1f}s"
+        log.info("model3d job %s completed → %s", job.job_id, actual)
+    except asyncio.CancelledError:
+        job.status = JobStatus.CANCELLED
+        job.message = "cancelled"
+        raise
+    except Exception as e:
+        log.exception("model3d job %s failed", job.job_id)
+        job.status = JobStatus.FAILED
+        job.error = f"{type(e).__name__}: {e}"
+        job.message = "failed"
+    finally:
+        job.finished_at = time.time()
 
 
 async def _janitor():
@@ -286,6 +343,7 @@ async def health():
         "queued": job_queue.qsize(),
         "jobs": len(jobs),
         "output_dir": str(OUTPUT_DIR),
+        "model3d": _model3d_health(),
     }
 
 
@@ -352,6 +410,39 @@ async def create_img2img(
     return GenerateResponse(job_id=job_id, status=JobStatus.QUEUED, poll_url=f"/api/status/{job_id}")
 
 
+@app.post("/api/model3d", status_code=202, response_model=GenerateResponse)
+async def create_model3d(
+    image: UploadFile = File(...),
+    texture_resolution: int = Form(1024),
+):
+    """Upload one image -> textured 3D model (GLB), generated locally by SF3D.
+
+    Mock mode (PLUSHY_MOCK=1) returns a clearly stamped *_MOCK.glb
+    placeholder instead - the job message says so.
+    """
+    job_id = uuid.uuid4().hex[:12]
+    upload_dir = OUTPUT_DIR / "uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    init_path = upload_dir / f"{job_id}_src.png"
+    data = await image.read()
+    if len(data) > 20 * 1024 * 1024:
+        raise HTTPException(413, "image too large (max 20MB)")
+    init_path.write_bytes(data)
+    tex = texture_resolution if texture_resolution in (512, 1024, 2048) else 1024
+    jobs[job_id] = Job(
+        job_id=job_id,
+        prompt="(image-to-3d)",
+        size=tex,
+        mode="m3d",
+        kind="model3d",
+        init_image=init_path,
+    )
+    await job_queue.put(job_id)
+    log.info("enqueued model3d job %s (queue depth %d)", job_id, job_queue.qsize())
+    return GenerateResponse(job_id=job_id, status=JobStatus.QUEUED,
+                            poll_url=f"/api/status/{job_id}")
+
+
 @app.get("/api/status/{job_id}", response_model=StatusResponse)
 async def status(job_id: str):
     job = jobs.get(job_id)
@@ -369,6 +460,12 @@ async def result(job_id: str):
         raise HTTPException(409, f"job not ready (status={job.status.value})")
     if not job.result_path.exists():
         raise HTTPException(410, "result file expired")
+    if job.result_path.suffix == ".glb":
+        return FileResponse(
+            job.result_path,
+            media_type="model/gltf-binary",
+            filename=f"plushy-model-{job_id}.glb",
+        )
     return FileResponse(
         job.result_path,
         media_type="image/png",
@@ -402,12 +499,14 @@ async def list_outputs():
     generations viewable from another machine on the LAN.
     """
     items = []
-    for p in sorted(OUTPUT_DIR.glob("*.png"),
-                    key=lambda f: f.stat().st_mtime, reverse=True):
+    files = sorted(list(OUTPUT_DIR.glob("*.png")) + list(OUTPUT_DIR.glob("*.glb")),
+                   key=lambda f: f.stat().st_mtime, reverse=True)
+    for p in files:
         st = p.stat()
         items.append({
             "name": p.name,
             "url": f"/api/outputs/{p.name}",
+            "kind": "glb" if p.suffix == ".glb" else "png",
             "size_bytes": st.st_size,
             "mtime": int(st.st_mtime),
         })
@@ -418,12 +517,13 @@ async def list_outputs():
 async def get_output(name: str):
     # Path(name).name strips any directory part - no traversal out of outputs/.
     safe = Path(name).name
-    if safe != name or not safe.endswith(".png"):
+    if safe != name or not (safe.endswith(".png") or safe.endswith(".glb")):
         raise HTTPException(400, "bad file name")
     path = OUTPUT_DIR / safe
     if not path.exists():
         raise HTTPException(404, "no such output")
-    return FileResponse(path, media_type="image/png", filename=safe)
+    media = "model/gltf-binary" if safe.endswith(".glb") else "image/png"
+    return FileResponse(path, media_type=media, filename=safe)
 
 
 @app.get("/studio")
@@ -443,4 +543,5 @@ async def index():
         "studio": "/studio",
         "docs": "/docs",
         "sprite": "POST /api/sprite (JSON: prompt, seed, size, steps) -> transparent PNG",
+        "model3d": "POST /api/model3d (multipart: image, texture_resolution) -> textured GLB",
     }

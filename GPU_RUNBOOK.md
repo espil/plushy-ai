@@ -105,3 +105,34 @@ Repeat with the other prompt files and commands from the production pack.
 | New files do not appear in outputs | Confirm the launcher printed the expected local output folder and that the batch used the same folder |
 | Blank or white sprite | Keep the prompt concrete, for example "a pine tree" or "a red fire hydrant" |
 | A job stays in processing | First run downloads the gated SDXL-Turbo model (~7 GB) plus the rembg model: watch the launcher console for `loading sprite model` and download progress, and check GPU use in Task Manager. If the log shows 401/gated, stop the launcher, set `HF_TOKEN` in PowerShell (`$env:HF_TOKEN = "..."`), and start again - the launcher forwards it to the container. |
+
+## 3D pipeline (image -> GLB, SF3D) - added 2026-10-25
+
+The Studio has an "Image -> 3D model" card: upload one image, get a
+textured GLB back. The engine is Stable Fast 3D (SF3D), running locally
+in an isolated venv inside the image (/opt/sf3d-venv). No cloud, no
+per-use credits. About 6GB VRAM per image; a few seconds per model once
+the model is downloaded.
+
+One-time setup:
+
+1. Rebuild the image (the Dockerfile changed - devel base + SF3D venv).
+   The first build takes a while (two torch installs + compiling SF3D's
+   texture baker):
+       docker build -t plushy-ai .
+2. Grant model access once, on the same Hugging Face account as your
+   HF_TOKEN: open https://huggingface.co/stabilityai/stable-fast-3d and
+   accept the model terms ("Agree and access repository").
+3. Keep HF_TOKEN set when launching (start-gui.bat forwards it). The
+   first real 3D run downloads the model (~3GB) into the plushy-hf
+   volume; later runs reuse it.
+
+Verify before trusting it - run `selftest-3d.bat`. It converts a drawn
+test house and checks the GLB numerically (triangle count, bounding
+box, texture present). It prints SELFTEST PASS only for a real textured
+mesh; the old gray-sphere placeholder can never pass.
+
+Mock rule: with PLUSHY_MOCK=1 the 3D path returns a file named
+*_MOCK.glb with a "mock": true sidecar, and the Studio says so. With
+mock off, a missing engine or a failed check fails the job loudly - a
+placeholder is never substituted silently.
