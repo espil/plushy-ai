@@ -143,3 +143,10 @@ delivery - normal buildings <= 8000 triangles, landmarks <= 20000
 (tick "Landmark" in the Studio card), textures baked at <= 1024.
 The delivered GLB's sidecar .json records the final triangle count
 and budget.
+
+Building batch: `run-buildings-3d.bat` converts all 18 Waitemata
+building images (inputs/buildings_iso/, listed in
+buildings_3d_manifest.json) to GLBs in outputs/models3d/. It is
+resumable - finished buildings are skipped - and `--only <asset>`
+produces a single building. b09 chief hall is flagged landmark
+(20000 tris); the rest use the 8000 budget.
