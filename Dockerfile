@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Plushy AI - sprite + image-to-3D GPU Docker image
 # Sprites: text -> transparent PNG (SDXL-Turbo + rembg).
 # 3D: image -> textured GLB via Stable Fast 3D (SF3D), isolated in its
@@ -8,7 +9,6 @@ FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
     PLUSHY_WORKERS=1
 
 # --- system deps ---
@@ -23,23 +23,31 @@ RUN ln -sf /usr/bin/python3.10 /usr/bin/python
 WORKDIR /app
 
 # --- torch (CUDA 12.1) first, so downstream wheels match ---
-RUN pip install --upgrade pip setuptools wheel \
- && pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121
+# pip downloads go through a BuildKit cache mount: if the build dies
+# mid-download (DNS/network hiccup on a ~730MB wheel), a rerun resumes
+# from the cached partials instead of starting over.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --retries 10 --timeout 120 --upgrade pip setuptools wheel \
+ && pip install --resume-retries 20 --retries 10 --timeout 120 \
+      torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121
 
 # --- python deps (sprite pipeline) ---
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --retries 10 --timeout 120 -r requirements.txt
 
 # --- SF3D image-to-3D engine (isolated venv, pinned upstream commit) ---
 # USE_CUDA=1 matters: there is no GPU at image-build time, and the
 # texture_baker would otherwise silently build its CPU fallback.
-RUN python -m venv /opt/sf3d-venv \
- && /opt/sf3d-venv/bin/pip install --upgrade pip "setuptools==69.5.1" wheel ninja \
- && /opt/sf3d-venv/bin/pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121 \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m venv /opt/sf3d-venv \
+ && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 --upgrade pip "setuptools==69.5.1" wheel ninja \
+ && /opt/sf3d-venv/bin/pip install --resume-retries 20 --retries 10 --timeout 120 \
+      torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121 \
  && git clone https://github.com/Stability-AI/stable-fast-3d.git /opt/stable-fast-3d \
  && cd /opt/stable-fast-3d \
  && git checkout ff21fc491b4dc5314bf6734c7c0dabd86b5f5bb2 \
- && USE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/sf3d-venv/bin/pip install -r requirements.txt
+ && USE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 -r requirements.txt
 
 # --- app code ---
 # (The run commands mount the repo over /app, so git pull alone updates code.
