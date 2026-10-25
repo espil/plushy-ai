@@ -39,14 +39,23 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # --- SF3D image-to-3D engine (isolated venv, pinned upstream commit) ---
 # USE_CUDA=1 matters: there is no GPU at image-build time, and the
 # texture_baker would otherwise silently build its CPU fallback.
+# Split into separate RUN steps on purpose: if one sub-step fails, the
+# build error names that exact step instead of one long chain.
 RUN --mount=type=cache,target=/root/.cache/pip \
     python -m venv /opt/sf3d-venv \
  && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 --upgrade pip "setuptools==69.5.1" wheel ninja \
  && /opt/sf3d-venv/bin/pip install --resume-retries 20 --retries 10 --timeout 120 \
-      torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121 \
- && git clone https://github.com/Stability-AI/stable-fast-3d.git /opt/stable-fast-3d \
+      torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121
+
+RUN git clone https://github.com/Stability-AI/stable-fast-3d.git /opt/stable-fast-3d \
  && cd /opt/stable-fast-3d \
- && git checkout ff21fc491b4dc5314bf6734c7c0dabd86b5f5bb2 \
+ && git checkout ff21fc491b4dc5314bf6734c7c0dabd86b5f5bb2
+
+# SF3D's requirements compile two local C++/CUDA extensions
+# (texture_baker, uv_unwrapper) plus small compiled deps - the most
+# failure-prone part of the build, kept as its own step.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd /opt/stable-fast-3d \
  && USE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 -r requirements.txt
 
 # --- app code ---
