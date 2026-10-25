@@ -93,6 +93,7 @@ class Job:
     style: str = "default"
     mode: str = "t2i"                      # "t2i" | "i2i" | "m3d"
     kind: str = "sprite"                   # "sprite" | "model3d"
+    tri_budget: int = 8000                 # model3d: 8000 normal / 20000 landmark
     init_image: Optional[Path] = None      # uploaded base image (i2i)
     strength: float = 0.6                  # img2img strength (i2i)
     status: JobStatus = JobStatus.QUEUED
@@ -264,7 +265,7 @@ async def _run_model3d_job(job: Job, progress):
     try:
         from pipeline_3d import Model3DOptions
         pipe = _get_model3d_pipeline()
-        opts = Model3DOptions(texture_resolution=job.size)
+        opts = Model3DOptions(texture_resolution=job.size, tri_budget=job.tri_budget)
         dest = OUTPUT_DIR / f"{job.job_id}.model3d.glb"
         t0 = time.time()
         loop = asyncio.get_running_loop()
@@ -414,6 +415,7 @@ async def create_img2img(
 async def create_model3d(
     image: UploadFile = File(...),
     texture_resolution: int = Form(1024),
+    landmark: bool = Form(False),
 ):
     """Upload one image -> textured 3D model (GLB), generated locally by SF3D.
 
@@ -436,6 +438,7 @@ async def create_model3d(
         mode="m3d",
         kind="model3d",
         init_image=init_path,
+        tri_budget=20000 if landmark else 8000,
     )
     await job_queue.put(job_id)
     log.info("enqueued model3d job %s (queue depth %d)", job_id, job_queue.qsize())

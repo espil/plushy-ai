@@ -53,9 +53,13 @@ ProgressCallback = Callable[[float, str], None]
 
 @dataclass
 class Model3DOptions:
-    texture_resolution: int = 1024   # 512 | 1024 | 2048
+    texture_resolution: int = 1024   # 512 | 1024 | 2048 (spec: <=1024 per building)
     remesh: str = "none"             # none | triangle | quad
     foreground_ratio: float = 0.85
+    # Building spec (Han, 2026-10-25; asset standard v1): low-poly geometry
+    # with real textures - normal buildings <= 8000 triangles, landmarks
+    # <= 20000, then gltfpack (meshopt) compression. Enforced in post.
+    tri_budget: int = 8000
 
 
 def engine_installed() -> bool:
@@ -250,17 +254,49 @@ class Model3DPipeline:
                 if not found:
                     raise RuntimeError("SF3D finished but produced no GLB file")
                 produced = found[0]
-            progress(0.85, "validating model (real-mesh gate)")
-            stats = validate_glb(produced)
+            progress(0.8, "validating model (real-mesh gate)")
+            validate_glb(produced)
+            progress(0.88, "low-poly + gltfpack pass (building spec)")
+            final = self._postprocess(produced, tmp, options)
+            stats = validate_glb(final)
+            if stats["triangles"] > int(options.tri_budget * 1.05):
+                raise ValueError(
+                    f"post-processed GLB still over the triangle budget: "
+                    f"{stats['triangles']} > {options.tri_budget}")
             stats.update({"mock": False, "engine": "sf3d", "model": SF3D_MODEL,
-                          "texture_resolution": tex})
-            shutil.copyfile(produced, dest)
+                          "texture_resolution": tex,
+                          "tri_budget": options.tri_budget, "gltfpack": True})
+            shutil.copyfile(final, dest)
             _write_sidecar(dest, stats)
             progress(1.0, "done")
             log.info("model3d done: %s (%s)", dest, stats)
             return dest, stats
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
+
+
+    def _postprocess(self, produced: Path, tmp: Path, options: Model3DOptions) -> Path:
+        """Enforce the building spec: decimate to the triangle budget with
+        gltfpack's simplifier, then meshopt-compress (-c). Textures stay
+        real (baked at <=1024 by SF3D). Fails loudly if gltfpack is absent."""
+        gltfpack = os.getenv("PLUSHY_GLTFPACK") or shutil.which("gltfpack")
+        if not gltfpack:
+            raise RuntimeError(
+                "gltfpack is not installed in this image, so the building "
+                "spec (low-poly + meshopt compression) cannot be applied. "
+                "Rebuild the Docker image with the current Dockerfile. "
+                "No unprocessed model was delivered.")
+        raw = glb_stats(produced)
+        packed = tmp / "packed.glb"
+        cmd = [gltfpack, "-i", str(produced), "-o", str(packed), "-c"]
+        if raw["triangles"] > options.tri_budget:
+            ratio = max(0.01, min(1.0, options.tri_budget / raw["triangles"] * 0.95))
+            cmd += ["-si", f"{ratio:.3f}"]
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=900)
+        if proc.returncode != 0 or not packed.exists():
+            tail = (proc.stderr or proc.stdout or "")[-1200:]
+            raise RuntimeError(f"gltfpack failed (exit {proc.returncode}): {tail}")
+        return packed
 
 
 def _write_sidecar(glb_path: Path, stats: dict) -> None:

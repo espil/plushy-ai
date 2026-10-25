@@ -136,3 +136,10 @@ Mock rule: with PLUSHY_MOCK=1 the 3D path returns a file named
 *_MOCK.glb with a "mock": true sidecar, and the Studio says so. With
 mock off, a missing engine or a failed check fails the job loudly - a
 placeholder is never substituted silently.
+
+Building spec applied automatically (Han, 2026-10-25): every model3d
+job is decimated to its triangle budget and gltfpack-compressed before
+delivery - normal buildings <= 8000 triangles, landmarks <= 20000
+(tick "Landmark" in the Studio card), textures baked at <= 1024.
+The delivered GLB's sidecar .json records the final triangle count
+and budget.

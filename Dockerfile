@@ -14,7 +14,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # --- system deps ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3.10 python3.10-venv python3-pip \
-        wget curl ffmpeg git build-essential ninja-build \
+        wget curl ffmpeg git build-essential ninja-build gltfpack \
         libgl1 libglib2.0-0 libsm6 libxext6 libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 

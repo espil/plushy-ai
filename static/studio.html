@@ -119,6 +119,9 @@
         <option value="2048">2048 px</option>
       </select>
     </label>
+    <label style="flex-direction:row; align-items:center; gap:.4rem">
+      <input type="checkbox" id="m3dLandmark"> Landmark (≤20k tris; normal ≤8k)
+    </label>
     <button class="go" id="go3d">Make 3D model</button>
   </div>
   <div id="jobs3d"></div>
@@ -326,6 +329,7 @@ async function runModel3D(file, tex) {
     const fd = new FormData();
     fd.append('image', file);
     fd.append('texture_resolution', tex);
+    fd.append('landmark', $('m3dLandmark').checked);
     const r = await fetch('/api/model3d', { method: 'POST', body: fd });
     if (!r.ok) {
       const t = await r.text();
