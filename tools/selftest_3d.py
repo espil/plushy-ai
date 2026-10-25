@@ -34,6 +34,37 @@ def draw_test_house(path: Path) -> None:
     im.save(path)
 
 
+def env_report() -> None:
+    """Print the facts that decide where a run can stall: does the SF3D
+    venv see the GPU, and is the model already in the HF cache? Asked
+    from the venv python itself, so it reports the engine's own view."""
+    import os
+    import subprocess
+
+    from pipeline_3d import SF3D_PYTHON
+
+    probe = (
+        "import torch;"
+        "print('torch ' + torch.__version__);"
+        "print('cuda ' + str(torch.cuda.is_available()));"
+        "print('device ' + (torch.cuda.get_device_name(0) "
+        "if torch.cuda.is_available() else 'NONE'))"
+    )
+    try:
+        out = subprocess.run([str(SF3D_PYTHON), "-c", probe],
+                             capture_output=True, text=True, timeout=180)
+        for line in (out.stdout or "").strip().splitlines():
+            print(f"[selftest] env: {line}")
+        if out.returncode != 0:
+            print(f"[selftest] env probe stderr: {(out.stderr or '')[-400:]}")
+    except Exception as e:
+        print(f"[selftest] env probe failed: {type(e).__name__}: {e}")
+    hub = Path(os.path.expanduser("~/.cache/huggingface/hub"))
+    snaps = list(hub.glob("models--stabilityai--stable-fast-3d/snapshots/*")) \
+        if hub.exists() else []
+    print(f"[selftest] env: SF3D model cache present: {bool(snaps)}")
+
+
 def main() -> int:
     from pipeline_3d import MOCK, Model3DPipeline, validate_glb
 
@@ -50,6 +81,7 @@ def main() -> int:
         print("[selftest] stamped placeholder, which proves nothing. FAIL.")
         return 1
 
+    env_report()
     pipe = Model3DPipeline()
     try:
         actual, stats = pipe.image_to_glb(

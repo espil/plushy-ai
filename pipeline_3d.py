@@ -243,11 +243,10 @@ class Model3DPipeline:
                 "--pretrained-model", SF3D_MODEL,
             ]
             env = dict(os.environ, PYTHONUNBUFFERED="1")
-            proc = subprocess.run(cmd, cwd=str(SF3D_HOME), capture_output=True,
-                                  text=True, timeout=1800, env=env)
-            if proc.returncode != 0:
-                tail = (proc.stderr or proc.stdout or "")[-1500:]
-                raise RuntimeError(f"SF3D failed (exit {proc.returncode}): {tail}")
+            returncode, tail = _run_streaming(cmd, cwd=str(SF3D_HOME), env=env,
+                                              timeout=1800, tag="sf3d")
+            if returncode != 0:
+                raise RuntimeError(f"SF3D failed (exit {returncode}): {tail[-1500:]}")
             produced = tmp / "0" / "mesh.glb"
             if not produced.exists():
                 found = sorted(tmp.rglob("*.glb"))
@@ -297,6 +296,40 @@ class Model3DPipeline:
             tail = (proc.stderr or proc.stdout or "")[-1200:]
             raise RuntimeError(f"gltfpack failed (exit {proc.returncode}): {tail}")
         return packed
+
+
+def _run_streaming(cmd, cwd, env, timeout, tag="sf3d"):
+    """Run a subprocess with its output streamed live to our stdout
+    (each line prefixed), keeping the tail for error reports. A silent
+    capture_output run once hid a 30-minute stall completely - with
+    streaming, a stuck download or a CPU fallback is visible as it
+    happens, and even a timeout reports the last thing the child said."""
+    import collections
+    import threading
+
+    proc = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, text=True, bufsize=1)
+    tail: collections.deque = collections.deque(maxlen=80)
+
+    def reader() -> None:
+        assert proc.stdout is not None
+        for line in proc.stdout:
+            line = line.rstrip("\n")
+            tail.append(line)
+            print(f"[{tag}] {line}", flush=True)
+
+    t = threading.Thread(target=reader, daemon=True)
+    t.start()
+    try:
+        proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        t.join(timeout=5)
+        raise RuntimeError(
+            f"{tag} timed out after {timeout}s. Last output:\n"
+            + "\n".join(tail)[-1500:])
+    t.join(timeout=5)
+    return proc.returncode, "\n".join(tail)
 
 
 def _write_sidecar(glb_path: Path, stats: dict) -> None:
