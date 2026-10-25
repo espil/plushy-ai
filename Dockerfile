@@ -54,9 +54,16 @@ RUN git clone https://github.com/Stability-AI/stable-fast-3d.git /opt/stable-fas
 # SF3D's requirements compile two local C++/CUDA extensions
 # (texture_baker, uv_unwrapper) plus small compiled deps - the most
 # failure-prone part of the build, kept as its own step.
+# The two local packages have no pyproject.toml and their setup.py
+# imports torch, which pip's build isolation hides (build env gets
+# only setuptools+wheel) - so: remote deps first with normal builds,
+# then the local packages with --no-build-isolation against the
+# venv's torch.
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd /opt/stable-fast-3d \
- && USE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 -r requirements.txt
+ && grep -v '^\./' requirements.txt > /tmp/sf3d-remote-requirements.txt \
+ && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 -r /tmp/sf3d-remote-requirements.txt \
+ && USE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/sf3d-venv/bin/pip install --no-build-isolation --retries 10 --timeout 120 ./texture_baker ./uv_unwrapper
 
 # --- app code ---
 # (The run commands mount the repo over /app, so git pull alone updates code.
