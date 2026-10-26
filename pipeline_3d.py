@@ -68,19 +68,27 @@ def engine_installed() -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Asset prefetch: SF3D silently downloads THREE things on first use -
-# its own weights, facebook/dinov2-large (its image tokenizer reads it
-# from the SF3D config), and rembg's u2net.onnx (from GitHub, into
-# U2NET_HOME). Inside a piped subprocess those downloads are invisible
-# and can crawl or stall for tens of minutes with the GPU idle - the
-# exact failure Han hit on 2026-10-25 (50 silent minutes at "10%").
+# Asset prefetch: SF3D silently downloads FOUR things on first use -
+# its own weights, facebook/dinov2-large (its image tokenizer reads
+# it from the SF3D config), the CLIP weights its image estimator
+# loads through open_clip (laion/CLIP-ViT-B-32-laion2B-s34B-b79K,
+# ~600 MB), and rembg's u2net.onnx (from GitHub, into U2NET_HOME).
+# Inside a piped subprocess those downloads are invisible and can
+# crawl or stall for tens of minutes with the GPU idle - the exact
+# failure Han hit on 2026-10-25 (50 silent minutes at "10%").
 # So: fetch everything up front, in the open, verify the cache is
 # complete, and then run SF3D with HF_HUB_OFFLINE=1 so it can never
 # touch the network again. A missing file then fails instantly and
-# names itself instead of hanging.
+# names itself instead of hanging. (The CLIP repo was missed in the
+# first inventory because open_clip downloads it inside
+# create_model_and_transforms, not via a visible from_pretrained -
+# Han's 2026-10-26 run-all log caught it once the torch fix let
+# model construction reach the estimator. The inventory is now
+# taken from a full grep of every fetch site in the SF3D source.)
 # ---------------------------------------------------------------------------
 
-PREFETCH_REPOS = [SF3D_MODEL, "facebook/dinov2-large"]
+PREFETCH_REPOS = [SF3D_MODEL, "facebook/dinov2-large",
+                  "laion/CLIP-ViT-B-32-laion2B-s34B-b79K"]
 
 
 def _hub_dir() -> Path:
