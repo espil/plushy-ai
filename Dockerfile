@@ -45,7 +45,12 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     python -m venv /opt/sf3d-venv \
  && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 --upgrade pip "setuptools==69.5.1" wheel ninja \
  && /opt/sf3d-venv/bin/pip install --resume-retries 20 --retries 10 --timeout 120 \
-      torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121
+      torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu121
+# torch 2.4.1, not 2.3.1: SF3D at the pinned commit imports
+# torch.amp.custom_fwd/custom_bwd (sf3d/models/network.py), which
+# exist only in torch >= 2.4 - with 2.3.1 the self-test died on that
+# ImportError (measured in Han's run-all log, 2026-10-25). 2.4.1 also
+# bundles the cuDNN 9 wheel the onnxruntime pin below needs.
 
 RUN git clone https://github.com/Stability-AI/stable-fast-3d.git /opt/stable-fast-3d \
  && cd /opt/stable-fast-3d \
@@ -59,17 +64,21 @@ RUN git clone https://github.com/Stability-AI/stable-fast-3d.git /opt/stable-fas
 # only setuptools+wheel) - so: remote deps first with normal builds,
 # then the local packages with --no-build-isolation against the
 # venv's torch.
-# onnxruntime-gpu is pinned to 1.18.1 (Han's call, 2026-10-25):
-# 1.19+ enumerates GPU devices by reading /sys/class/drm sysfs files,
-# which do not exist inside a container - discovery fails there, the
-# warning prints, and onnxruntime sessions get no GPU device. 1.18.1
-# predates that mechanism and finds the GPU through the CUDA driver
-# directly, so neither the warning nor the CPU fallback occurs.
+# onnxruntime-gpu is pinned to 1.20.2 (measured root cause,
+# 2026-10-25): what rembg's dependency resolved to, 1.18.1, is a
+# CUDA 11 build - its provider library needs libcublas(Lt).so.11,
+# which does not exist in this CUDA 12.1 image, so the provider
+# fails to load and rembg sessions fall back to CPU (Han's run-all
+# log: "rembg session providers: ['CPUExecutionProvider']"). 1.20.2
+# is the CUDA 12 + cuDNN 9 build; every library it needs exists
+# here - libcublas.so.12 in /usr/local/cuda/lib64 and libcudnn.so.9
+# in torch 2.4.1's bundled wheel, both put on LD_LIBRARY_PATH by
+# pipeline_3d._sf3d_env.
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd /opt/stable-fast-3d \
  && grep -v '^\./' requirements.txt > /tmp/sf3d-remote-requirements.txt \
  && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 -r /tmp/sf3d-remote-requirements.txt \
- && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 "onnxruntime-gpu==1.18.1" \
+ && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 "onnxruntime-gpu==1.20.2" \
  && USE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/sf3d-venv/bin/pip install --no-build-isolation --retries 10 --timeout 120 ./texture_baker ./uv_unwrapper
 
 # --- app code ---
