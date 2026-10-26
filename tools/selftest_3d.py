@@ -59,10 +59,15 @@ def env_report() -> None:
             print(f"[selftest] env probe stderr: {(out.stderr or '')[-400:]}")
     except Exception as e:
         print(f"[selftest] env probe failed: {type(e).__name__}: {e}")
-    hub = Path(os.path.expanduser("~/.cache/huggingface/hub"))
-    snaps = list(hub.glob("models--stabilityai--stable-fast-3d/snapshots/*")) \
-        if hub.exists() else []
-    print(f"[selftest] env: SF3D model cache present: {bool(snaps)}")
+    from pipeline_3d import PREFETCH_REPOS, _repo_cache_state, _u2net_home
+
+    for repo in PREFETCH_REPOS:
+        st = _repo_cache_state(repo)
+        print(f"[selftest] env: cache {repo}: exists={st['exists']} "
+              f"snapshots={st['snapshots']} incomplete={st['incomplete']} "
+              f"size={st['bytes'] / 1e6:.0f} MB")
+    print(f"[selftest] env: rembg u2net cached: "
+          f"{(_u2net_home() / 'u2net.onnx').exists()}")
 
 
 def main() -> int:

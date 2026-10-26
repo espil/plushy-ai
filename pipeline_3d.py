@@ -37,6 +37,7 @@ import shutil
 import struct
 import subprocess
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Optional
@@ -64,6 +65,84 @@ class Model3DOptions:
 
 def engine_installed() -> bool:
     return SF3D_PYTHON.exists() and (SF3D_HOME / "run.py").exists()
+
+
+# ---------------------------------------------------------------------------
+# Asset prefetch: SF3D silently downloads THREE things on first use -
+# its own weights, facebook/dinov2-large (its image tokenizer reads it
+# from the SF3D config), and rembg's u2net.onnx (from GitHub, into
+# U2NET_HOME). Inside a piped subprocess those downloads are invisible
+# and can crawl or stall for tens of minutes with the GPU idle - the
+# exact failure Han hit on 2026-10-25 (50 silent minutes at "10%").
+# So: fetch everything up front, in the open, verify the cache is
+# complete, and then run SF3D with HF_HUB_OFFLINE=1 so it can never
+# touch the network again. A missing file then fails instantly and
+# names itself instead of hanging.
+# ---------------------------------------------------------------------------
+
+PREFETCH_REPOS = [SF3D_MODEL, "facebook/dinov2-large"]
+
+
+def _hub_dir() -> Path:
+    hf_home = os.getenv("HF_HOME")
+    if hf_home:
+        return Path(hf_home) / "hub"
+    return Path(os.path.expanduser("~/.cache/huggingface")) / "hub"
+
+
+def _u2net_home() -> Path:
+    return Path(os.getenv("U2NET_HOME") or (_hub_dir().parent / "u2net"))
+
+
+def _repo_cache_state(repo_id: str) -> dict:
+    folder = _hub_dir() / ("models--" + repo_id.replace("/", "--"))
+    if not folder.exists():
+        return {"exists": False, "snapshots": 0, "incomplete": 0, "bytes": 0}
+    incomplete = len(list(folder.rglob("*.incomplete")))
+    total = sum(p.stat().st_size for p in folder.rglob("*") if p.is_file())
+    snaps = list((folder / "snapshots").glob("*")) if (folder / "snapshots").exists() else []
+    return {"exists": True, "snapshots": len(snaps),
+            "incomplete": incomplete, "bytes": total}
+
+
+def repo_cache_complete(repo_id: str) -> bool:
+    st = _repo_cache_state(repo_id)
+    return st["exists"] and st["snapshots"] > 0 and st["incomplete"] == 0
+
+
+def ensure_assets_cached(progress: ProgressCallback = lambda p, m: None) -> None:
+    """Download + verify every asset SF3D needs, with visible progress.
+    Raises RuntimeError naming whatever could not be cached."""
+    from huggingface_hub import snapshot_download
+
+    for repo in PREFETCH_REPOS:
+        if repo_cache_complete(repo):
+            st = _repo_cache_state(repo)
+            progress(0.04, f"model cache verified: {repo} "
+                           f"({st['bytes'] / 1e6:.0f} MB, complete)")
+            continue
+        progress(0.04, f"downloading model: {repo} (visible, one-time)")
+        snapshot_download(repo_id=repo)
+        if not repo_cache_complete(repo):
+            st = _repo_cache_state(repo)
+            raise RuntimeError(
+                f"model cache still incomplete for {repo}: {st}. "
+                "Check the network connection to Hugging Face and retry.")
+        st = _repo_cache_state(repo)
+        progress(0.06, f"model cached: {repo} ({st['bytes'] / 1e6:.0f} MB)")
+
+    u2net = _u2net_home() / "u2net.onnx"
+    if u2net.exists():
+        progress(0.06, "rembg u2net model verified in cache")
+        return
+    progress(0.06, "downloading rembg u2net model (one-time, ~170 MB)")
+    env = dict(os.environ, U2NET_HOME=str(_u2net_home()), PYTHONUNBUFFERED="1")
+    rc, tail = _run_streaming(
+        [str(SF3D_PYTHON), "-c", "import rembg; rembg.new_session()"],
+        cwd=str(SF3D_HOME), env=env, timeout=1200, tag="prefetch")
+    if rc != 0 or not u2net.exists():
+        raise RuntimeError(
+            f"rembg u2net download failed (exit {rc}): {tail[-800:]}")
 
 
 # ---------------------------------------------------------------------------
@@ -233,7 +312,8 @@ class Model3DPipeline:
 
         tmp = Path(tempfile.mkdtemp(prefix="plushy3d_"))
         try:
-            progress(0.1, "SF3D reconstruction starting (first run downloads the model, ~3GB)")
+            ensure_assets_cached(progress)
+            progress(0.1, "SF3D reconstruction starting (assets cached, offline run)")
             cmd = [
                 str(SF3D_PYTHON), str(SF3D_HOME / "run.py"), str(image_path),
                 "--output-dir", str(tmp),
@@ -242,7 +322,8 @@ class Model3DPipeline:
                 "--foreground-ratio", str(options.foreground_ratio),
                 "--pretrained-model", SF3D_MODEL,
             ]
-            env = dict(os.environ, PYTHONUNBUFFERED="1")
+            env = dict(os.environ, PYTHONUNBUFFERED="1",
+                       HF_HUB_OFFLINE="1", U2NET_HOME=str(_u2net_home()))
             returncode, tail = _run_streaming(cmd, cwd=str(SF3D_HOME), env=env,
                                               timeout=1800, tag="sf3d")
             if returncode != 0:
@@ -310,16 +391,29 @@ def _run_streaming(cmd, cwd, env, timeout, tag="sf3d"):
     proc = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, text=True, bufsize=1)
     tail: collections.deque = collections.deque(maxlen=80)
+    state = {"last_line": time.monotonic(), "start": time.monotonic()}
 
     def reader() -> None:
         assert proc.stdout is not None
         for line in proc.stdout:
             line = line.rstrip("\n")
             tail.append(line)
+            state["last_line"] = time.monotonic()
             print(f"[{tag}] {line}", flush=True)
+
+    def heartbeat() -> None:
+        while proc.poll() is None:
+            time.sleep(30)
+            silence = time.monotonic() - state["last_line"]
+            if silence >= 60 and proc.poll() is None:
+                elapsed = time.monotonic() - state["start"]
+                print(f"[{tag}] ... still running "
+                      f"({elapsed:.0f}s elapsed, no output for {silence:.0f}s)",
+                      flush=True)
 
     t = threading.Thread(target=reader, daemon=True)
     t.start()
+    threading.Thread(target=heartbeat, daemon=True).start()
     try:
         proc.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
