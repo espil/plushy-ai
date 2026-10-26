@@ -1,0 +1,219 @@
+{
+ "assets": [
+  {
+   "asset": "v01_nanmadol_islet_house",
+   "landmark": false,
+   "source": "v01_nanmadol_islet_house.jpg"
+  },
+  {
+   "asset": "v02_nanmadol_elder_hall",
+   "landmark": true,
+   "source": "v02_nanmadol_elder_hall.jpg"
+  },
+  {
+   "asset": "v03_nanmadol_canal_gate",
+   "landmark": false,
+   "source": "v03_nanmadol_canal_gate.jpg"
+  },
+  {
+   "asset": "v04_nanmadol_tide_shrine",
+   "landmark": false,
+   "source": "v04_nanmadol_tide_shrine.jpg"
+  },
+  {
+   "asset": "v05_nanmadol_warehouse",
+   "landmark": false,
+   "source": "v05_nanmadol_warehouse.jpg"
+  },
+  {
+   "asset": "v06_haamonga_trilithon",
+   "landmark": false,
+   "source": "v06_haamonga_trilithon.jpg"
+  },
+  {
+   "asset": "v07_haamonga_season_shrine",
+   "landmark": false,
+   "source": "v07_haamonga_season_shrine.jpg"
+  },
+  {
+   "asset": "v08_haamonga_elder_hall",
+   "landmark": true,
+   "source": "v08_haamonga_elder_hall.jpg"
+  },
+  {
+   "asset": "v09_haamonga_observatory",
+   "landmark": false,
+   "source": "v09_haamonga_observatory.jpg"
+  },
+  {
+   "asset": "v10_haamonga_fale_house",
+   "landmark": false,
+   "source": "v10_haamonga_fale_house.jpg"
+  },
+  {
+   "asset": "v11_tapu_marae_platform",
+   "landmark": false,
+   "source": "v11_tapu_marae_platform.jpg"
+  },
+  {
+   "asset": "v12_tapu_canoe_house",
+   "landmark": false,
+   "source": "v12_tapu_canoe_house.jpg"
+  },
+  {
+   "asset": "v13_tapu_compass_pavilion",
+   "landmark": false,
+   "source": "v13_tapu_compass_pavilion.jpg"
+  },
+  {
+   "asset": "v14_tapu_elder_hall",
+   "landmark": true,
+   "source": "v14_tapu_elder_hall.jpg"
+  },
+  {
+   "asset": "v15_tapu_offering_shrine",
+   "landmark": false,
+   "source": "v15_tapu_offering_shrine.jpg"
+  },
+  {
+   "asset": "v16_ahu_moai_platform",
+   "landmark": false,
+   "source": "v16_ahu_moai_platform.jpg"
+  },
+  {
+   "asset": "v17_ahu_sunrise_terrace",
+   "landmark": false,
+   "source": "v17_ahu_sunrise_terrace.jpg"
+  },
+  {
+   "asset": "v18_ahu_elder_hall",
+   "landmark": true,
+   "source": "v18_ahu_elder_hall.jpg"
+  },
+  {
+   "asset": "v19_ahu_carver_shelter",
+   "landmark": false,
+   "source": "v19_ahu_carver_shelter.jpg"
+  },
+  {
+   "asset": "v20_ahu_quarry_storehouse",
+   "landmark": false,
+   "source": "v20_ahu_quarry_storehouse.jpg"
+  },
+  {
+   "asset": "v21_leluh_royal_court",
+   "landmark": true,
+   "source": "v21_leluh_royal_court.jpg"
+  },
+  {
+   "asset": "v22_leluh_canal_house",
+   "landmark": false,
+   "source": "v22_leluh_canal_house.jpg"
+  },
+  {
+   "asset": "v23_leluh_dynasty_wall",
+   "landmark": false,
+   "source": "v23_leluh_dynasty_wall.jpg"
+  },
+  {
+   "asset": "v24_leluh_elder_hall",
+   "landmark": true,
+   "source": "v24_leluh_elder_hall.jpg"
+  },
+  {
+   "asset": "v25_leluh_watch_post",
+   "landmark": false,
+   "source": "v25_leluh_watch_post.jpg"
+  },
+  {
+   "asset": "v26_pulemelei_mound",
+   "landmark": true,
+   "source": "v26_pulemelei_mound.jpg"
+  },
+  {
+   "asset": "v27_pulemelei_summit_shrine",
+   "landmark": false,
+   "source": "v27_pulemelei_summit_shrine.jpg"
+  },
+  {
+   "asset": "v28_pulemelei_elder_hall",
+   "landmark": true,
+   "source": "v28_pulemelei_elder_hall.jpg"
+  },
+  {
+   "asset": "v29_pulemelei_stair_gate",
+   "landmark": false,
+   "source": "v29_pulemelei_stair_gate.jpg"
+  },
+  {
+   "asset": "v30_pulemelei_terraced_house",
+   "landmark": false,
+   "source": "v30_pulemelei_terraced_house.jpg"
+  },
+  {
+   "asset": "v31_haamonga_trilithon_gate",
+   "landmark": false,
+   "source": "v31_haamonga_trilithon_gate.jpg"
+  },
+  {
+   "asset": "d01_grotto_entrance",
+   "landmark": false,
+   "source": "d01_grotto_entrance.jpg"
+  },
+  {
+   "asset": "d02_drowned_cave_gate",
+   "landmark": false,
+   "source": "d02_drowned_cave_gate.jpg"
+  },
+  {
+   "asset": "d03_water_shrine",
+   "landmark": false,
+   "source": "d03_water_shrine.jpg"
+  },
+  {
+   "asset": "d04_emberdeep_entrance",
+   "landmark": false,
+   "source": "d04_emberdeep_entrance.jpg"
+  },
+  {
+   "asset": "d05_lava_forge_gate",
+   "landmark": false,
+   "source": "d05_lava_forge_gate.jpg"
+  },
+  {
+   "asset": "d06_smoking_ravine",
+   "landmark": false,
+   "source": "d06_smoking_ravine.jpg"
+  },
+  {
+   "asset": "d07_drowned_vault",
+   "landmark": false,
+   "source": "d07_drowned_vault.jpg"
+  },
+  {
+   "asset": "d08_sunken_temple_door",
+   "landmark": false,
+   "source": "d08_sunken_temple_door.jpg"
+  },
+  {
+   "asset": "d09_lagoon_ruin",
+   "landmark": false,
+   "source": "d09_lagoon_ruin.jpg"
+  },
+  {
+   "asset": "d10_ruin_heart_gate",
+   "landmark": false,
+   "source": "d10_ruin_heart_gate.jpg"
+  },
+  {
+   "asset": "d11_pyramid_door",
+   "landmark": false,
+   "source": "d11_pyramid_door.jpg"
+  },
+  {
+   "asset": "d12_canal_lock_gate",
+   "landmark": false,
+   "source": "d12_canal_lock_gate.jpg"
+  }
+ ]
+}
