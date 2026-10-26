@@ -64,21 +64,25 @@ RUN git clone https://github.com/Stability-AI/stable-fast-3d.git /opt/stable-fas
 # only setuptools+wheel) - so: remote deps first with normal builds,
 # then the local packages with --no-build-isolation against the
 # venv's torch.
-# onnxruntime-gpu is pinned to 1.20.2 (measured root cause,
-# 2026-10-25): what rembg's dependency resolved to, 1.18.1, is a
-# CUDA 11 build - its provider library needs libcublas(Lt).so.11,
-# which does not exist in this CUDA 12.1 image, so the provider
-# fails to load and rembg sessions fall back to CPU (Han's run-all
-# log: "rembg session providers: ['CPUExecutionProvider']"). 1.20.2
-# is the CUDA 12 + cuDNN 9 build; every library it needs exists
-# here - libcublas.so.12 in /usr/local/cuda/lib64 and libcudnn.so.9
-# in torch 2.4.1's bundled wheel, both put on LD_LIBRARY_PATH by
-# pipeline_3d._sf3d_env.
+# onnxruntime-gpu comes from Microsoft's CUDA-12 feed as an exact
+# wheel URL (binary-verified 2026-10-25, after Han's run-all log
+# measured "rembg session providers: ['CPUExecutionProvider']"):
+# PyPI's 1.18.1 is a CUDA 11 build - its provider needs
+# libcublas(Lt).so.11, absent in this CUDA 12.1 image, so it cannot
+# load at all; PyPI's CUDA 12 builds (1.19+) carry the sysfs
+# device-discovery that fails noisily in containers. The feed's
+# 1.18.1 is a CUDA 12 + cuDNN 9 build whose binaries contain no
+# device-discovery code at all (zero matching strings, checked
+# directly), and its provider NEEDs only libraries that exist
+# here: libcublas.so.12 in /usr/local/cuda/lib64, libcudnn.so.9 in
+# torch 2.4.1's bundled wheel - both on LD_LIBRARY_PATH via
+# pipeline_3d._sf3d_env. A direct URL (not a version pin) so pip
+# can never substitute PyPI's same-version CUDA 11 wheel.
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd /opt/stable-fast-3d \
  && grep -v '^\./' requirements.txt > /tmp/sf3d-remote-requirements.txt \
  && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 -r /tmp/sf3d-remote-requirements.txt \
- && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 "onnxruntime-gpu==1.20.2" \
+ && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 "https://aiinfra.pkgs.visualstudio.com/2692857e-05ef-43b4-ba9c-ccf1c22c437c/_packaging/9387c3aa-d9ad-4513-968c-383f6f7f53b8/pypi/download/onnxruntime-gpu/1.18.1/onnxruntime_gpu-1.18.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl#sha256=4e9a52f5d43a84fe29e135da6bf10daa18836c81bed9060a5924efd6afc0d259" \
  && USE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/sf3d-venv/bin/pip install --no-build-isolation --retries 10 --timeout 120 ./texture_baker ./uv_unwrapper
 
 # --- app code ---
