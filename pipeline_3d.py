@@ -94,6 +94,32 @@ def _u2net_home() -> Path:
     return Path(os.getenv("U2NET_HOME") or (_hub_dir().parent / "u2net"))
 
 
+def _nvidia_lib_dirs() -> list[str]:
+    """Library dirs onnxruntime's CUDA provider needs on the loader
+    path (its .so links libcudnn/libcublas; if they are not findable,
+    the CUDA provider silently drops out and rembg runs on CPU while
+    onnxruntime logs a GPU-discovery warning - the exact warning Han
+    flagged on 2026-10-25). torch's nvidia-* wheels carry the libs."""
+    dirs = ["/usr/local/cuda/lib64"]
+    site = SF3D_PYTHON.parent.parent / "lib" / "python3.10" / "site-packages"
+    nvidia = site / "nvidia"
+    if nvidia.exists():
+        dirs += [str(p) for p in sorted(nvidia.glob("*/lib"))]
+    return dirs
+
+
+def _sf3d_env(offline: bool = False) -> dict:
+    env = dict(os.environ, PYTHONUNBUFFERED="1",
+               U2NET_HOME=str(_u2net_home()))
+    libs = _nvidia_lib_dirs()
+    if env.get("LD_LIBRARY_PATH"):
+        libs.append(env["LD_LIBRARY_PATH"])
+    env["LD_LIBRARY_PATH"] = ":".join(libs)
+    if offline:
+        env["HF_HUB_OFFLINE"] = "1"
+    return env
+
+
 def _repo_cache_state(repo_id: str) -> dict:
     folder = _hub_dir() / ("models--" + repo_id.replace("/", "--"))
     if not folder.exists():
@@ -133,13 +159,23 @@ def ensure_assets_cached(progress: ProgressCallback = lambda p, m: None) -> None
 
     u2net = _u2net_home() / "u2net.onnx"
     if u2net.exists():
-        progress(0.06, "rembg u2net model verified in cache")
-        return
-    progress(0.06, "downloading rembg u2net model (one-time, ~170 MB)")
-    env = dict(os.environ, U2NET_HOME=str(_u2net_home()), PYTHONUNBUFFERED="1")
+        progress(0.06, "rembg u2net model verified in cache - probing providers")
+    else:
+        progress(0.06, "downloading rembg u2net model (one-time, ~170 MB)")
+    # The probe prints which execution providers the live rembg session
+    # actually binds - the GPU-discovery warning alone does not prove a
+    # CPU fallback, and a CPU claim must be measured, not assumed.
+    probe = (
+        "import onnxruntime as ort, rembg;"
+        "print('onnxruntime ' + ort.__version__);"
+        "print('available providers: ' + str(ort.get_available_providers()));"
+        "s = rembg.new_session();"
+        "inner = getattr(s, 'inner_session', s);"
+        "print('rembg session providers: ' + str(inner.get_providers()))"
+    )
     rc, tail = _run_streaming(
-        [str(SF3D_PYTHON), "-c", "import rembg; rembg.new_session()"],
-        cwd=str(SF3D_HOME), env=env, timeout=1200, tag="prefetch")
+        [str(SF3D_PYTHON), "-c", probe],
+        cwd=str(SF3D_HOME), env=_sf3d_env(), timeout=1200, tag="prefetch")
     if rc != 0 or not u2net.exists():
         raise RuntimeError(
             f"rembg u2net download failed (exit {rc}): {tail[-800:]}")
@@ -322,9 +358,8 @@ class Model3DPipeline:
                 "--foreground-ratio", str(options.foreground_ratio),
                 "--pretrained-model", SF3D_MODEL,
             ]
-            env = dict(os.environ, PYTHONUNBUFFERED="1",
-                       HF_HUB_OFFLINE="1", U2NET_HOME=str(_u2net_home()))
-            returncode, tail = _run_streaming(cmd, cwd=str(SF3D_HOME), env=env,
+            returncode, tail = _run_streaming(cmd, cwd=str(SF3D_HOME),
+                                              env=_sf3d_env(offline=True),
                                               timeout=1800, tag="sf3d")
             if returncode != 0:
                 raise RuntimeError(f"SF3D failed (exit {returncode}): {tail[-1500:]}")
