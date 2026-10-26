@@ -59,10 +59,17 @@ RUN git clone https://github.com/Stability-AI/stable-fast-3d.git /opt/stable-fas
 # only setuptools+wheel) - so: remote deps first with normal builds,
 # then the local packages with --no-build-isolation against the
 # venv's torch.
+# onnxruntime-gpu is pinned to 1.18.1 (Han's call, 2026-10-25):
+# 1.19+ enumerates GPU devices by reading /sys/class/drm sysfs files,
+# which do not exist inside a container - discovery fails there, the
+# warning prints, and onnxruntime sessions get no GPU device. 1.18.1
+# predates that mechanism and finds the GPU through the CUDA driver
+# directly, so neither the warning nor the CPU fallback occurs.
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd /opt/stable-fast-3d \
  && grep -v '^\./' requirements.txt > /tmp/sf3d-remote-requirements.txt \
  && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 -r /tmp/sf3d-remote-requirements.txt \
+ && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 "onnxruntime-gpu==1.18.1" \
  && USE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/sf3d-venv/bin/pip install --no-build-isolation --retries 10 --timeout 120 ./texture_baker ./uv_unwrapper
 
 # --- app code ---
