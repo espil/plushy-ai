@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plushy GLB 뷰어</title>
+<style>
+  html, body { margin:0; height:100%; overflow:hidden; background:#1a1d21;
+               font-family:"Segoe UI", "Malgun Gothic", sans-serif; }
+  #drop { position:fixed; inset:0; display:flex; flex-direction:column;
+          align-items:center; justify-content:center; color:#cfd6dd;
+          text-align:center; gap:10px; padding:20px; }
+  #drop.hidden { display:none; }
+  #drop .big { font-size:22px; }
+  #drop .small { font-size:13px; color:#8b959e; }
+  #info { position:fixed; left:12px; bottom:10px; color:#9fb0bd;
+          font-size:12.5px; z-index:5; white-space:pre-line; }
+  #pick { position:fixed; right:12px; top:10px; z-index:5; }
+  button { background:#2b3138; color:#e6edf3; border:1px solid #4a545e;
+           border-radius:8px; padding:8px 14px; font-size:13.5px; cursor:pointer; }
+  button:hover { background:#39424c; }
+  canvas { display:block; }
+  body.dragging { outline:3px dashed #5aa2e0; outline-offset:-6px; }
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="drop">
+  <div class="big">GLB 파일을 이 창에 끌어다 놓으세요</div>
+  <div class="small">outputs\models3d 안의 파일을 그대로 열 수 있습니다 (meshopt 압축 해제 포함)<br>
+  마우스 드래그: 회전 · 휠: 확대/축소 · 우클릭 드래그: 이동</div>
+</div>
+<div id="pick"><button id="openBtn" type="button">파일 열기</button>
+<input id="fileInput" type="file" accept=".glb,.gltf" style="display:none"></div>
+<div id="info"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(devicePixelRatio);
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x23272c);
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.01, 5000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.position.set(30, 50, 20);
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xbfd4ff, 0.5);
+fill.position.set(-25, 15, -30);
+scene.add(fill);
+const ground = new THREE.GridHelper(200, 40, 0x3a424b, 0x2c3239);
+scene.add(ground);
+
+const loader = new GLTFLoader();
+loader.setMeshoptDecoder(MeshoptDecoder);
+let current = null;
+
+function loadBuffer(buffer, name) {
+  loader.parse(buffer, '', (gltf) => {
+    if (current) { scene.remove(current); current.traverse(o => { o.geometry?.dispose?.(); }); }
+    current = gltf.scene;
+    // Centre the model on the origin, resting on the grid.
+    const box = new THREE.Box3().setFromObject(current);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    current.position.x -= center.x;
+    current.position.z -= center.z;
+    current.position.y -= box.min.y;
+    scene.add(current);
+    const radius = Math.max(size.x, size.y, size.z) * 0.5 || 1;
+    camera.position.set(radius * 1.7, radius * 1.25, radius * 2.0);
+    controls.target.set(0, size.y * 0.45, 0);
+    camera.near = radius / 100; camera.far = radius * 100;
+    camera.updateProjectionMatrix();
+    controls.update();
+    let tris = 0;
+    current.traverse(o => {
+      if (o.isMesh) {
+        const g = o.geometry;
+        tris += (g.index ? g.index.count : g.attributes.position.count) / 3;
+      }
+    });
+    document.getElementById('info').textContent =
+      `${name}\n크기 ${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)} (모델 단위) · 삼각형 ${Math.round(tris).toLocaleString()}개`;
+    document.getElementById('drop').classList.add('hidden');
+  }, (err) => {
+    document.getElementById('info').textContent = '열기 실패: ' + err.message;
+  });
+}
+
+async function loadFile(file) {
+  const buf = await file.arrayBuffer();
+  loadBuffer(buf, file.name);
+}
+
+const fileInput = document.getElementById('fileInput');
+document.getElementById('openBtn').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
+
+addEventListener('dragover', (e) => { e.preventDefault(); document.body.classList.add('dragging'); });
+addEventListener('dragleave', () => document.body.classList.remove('dragging'));
+addEventListener('drop', (e) => {
+  e.preventDefault();
+  document.body.classList.remove('dragging');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+</script>
+</body>
+</html>
