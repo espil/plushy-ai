@@ -1,0 +1,28 @@
+# Plushy AI - one-command local run.
+#   docker compose up --build
+# then open http://localhost:8000/studio
+# Set HF_TOKEN in your shell first if this is the very first run
+# (needed once to download the gated sprite model).
+services:
+  plushy-ai:
+    build: .
+    image: plushy-ai
+    container_name: plushy-gui
+    ports:
+      - "8000:8000"
+    environment:
+      - PLUSHY_OUTPUT_DIR=/app/outputs
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes:
+      - ./outputs:/app/outputs
+      - plushy-hf:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  plushy-hf:

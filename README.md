@@ -1,122 +1,122 @@
-# 🧸 Plushy AI - local text-to-sprite generator
+# Plushy AI
 
-Text prompt → transparent PNG sprites, generated on your own GPU.
-No cloud, no per-generation fees. Built for billboard sprites in game maps
-(trees, props, street furniture).
+**Free, local AI asset generation for game developers - on your own GPU.**
 
-```
-"a pine tree" ──▶ POST /api/sprite ──▶ queue ──▶ SDXL-Turbo + rembg ──▶ sprite.png
-```
+Plushy AI turns text prompts into transparent game sprites, and images
+into textured 3D models (GLB), entirely on your own machine. No cloud,
+no per-generation fees, nothing uploaded anywhere.
 
-~5 seconds per sprite on an RTX 4060 (8GB).
+## What it does
 
-## Architecture
-
-| Piece | File | Notes |
+| Mode | Input | Output |
 |---|---|---|
-| API + async queue | `app.py` | FastAPI; `POST /api/sprite` returns `202 + job_id` immediately; background workers (default 1, one GPU) run inference in a thread executor so the event loop never blocks |
-| Sprite pipeline | `pipeline_sprite.py` | SDXL-Turbo text-to-image → rembg background removal → transparent `.PNG` (fp16 on CUDA, xformers attention when available) |
-| Batch CLI | `sprites.py` | prompts file → folder of transparent PNGs + `manifest.json` |
-| GPU environment | `Dockerfile` | CUDA 12.1 runtime, torch 2.3, diffusers |
+| Sprite generation | a text prompt | transparent PNG sprite (SDXL-Turbo + rembg), ~5 s on an RTX 4060 |
+| Image to 3D | one image (plain white background works best) | textured GLB via Stable Fast 3D, decimated to a game triangle budget, meshopt-compressed **plus** an uncompressed twin for loaders without meshopt support (e.g. Unity glTFast) |
+| Batch production | a folder of images + a JSON manifest | a whole set converted unattended and resumable |
 
-### Endpoints
+3D budgets by default: 8,000 triangles per normal model, 20,000 for
+landmarks, textures at 1024-2048.
+
+## The Studio (web UI)
+
+One page does everything: **Plushy AI Studio**
+
+- Prompt box with live job progress
+- Sprite and image-to-3D modes
+- In-browser 3D preview of generated models
+- Gallery of your output folder with downloads
+- Job history and cancel
+
+## Quick start
+
+Requirements: an NVIDIA GPU (8 GB VRAM or more) and Docker Desktop
+(or Docker Engine with the NVIDIA container toolkit).
+
+```bash
+git clone https://github.com/espil/plushy-ai.git
+cd plushy-ai
+docker compose up --build
+```
+
+Then open **http://localhost:8000/studio**.
+
+A Hugging Face token is needed once, on the very first run, to download
+the gated SDXL-Turbo model:
+
+```bash
+export HF_TOKEN=hf_...        # PowerShell: $env:HF_TOKEN = "hf_..."
+docker compose up --build
+```
+
+All weights (sprite, background removal, 3D - about 18 GB total) are
+downloaded visibly on the first run, cached in a Docker volume, and
+used offline afterwards. Nothing downloads silently mid-job.
+
+On Windows, `start-gui.bat` does the same thing and also serves the
+Studio to other devices on your LAN.
+
+## Batch 3D production
+
+```bash
+python run_buildings_3d.py --manifest waitemata_v2_manifest.json \
+    --inputs inputs/waitemata_v2 --texture 2048 --out outputs/models3d_v2
+```
+
+Every asset produces `<name>.glb` (compressed),
+`<name>_uncompressed.glb`, and a `<name>.glb.json` spec sidecar.
+Re-running skips finished assets, so a batch can be stopped and
+resumed at any point. Ready-made `run-*.bat` launchers are included.
+
+## API
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/sprite` | JSON `prompt`, `seed`, `size` (64–1024), `steps` → `202 { job_id, poll_url }` |
+| `POST` | `/api/sprite` | JSON `prompt`, `seed`, `size` (64-1024), `steps` - returns `202 { job_id }` |
+| `POST` | `/api/model3d` | upload an image - returns `202 { job_id }` |
 | `GET` | `/api/status/{job_id}` | `{ status, progress, message, result_url, elapsed_sec, error }` |
-| `GET` | `/api/result/{job_id}` | downloads the transparent `.PNG` (`image/png`) |
-| `GET` | `/api/outputs` | lists PNGs already in the output folder, newest first |
-| `DELETE` | `/api/job/{job_id}` | cancel + delete that job's result |
-| `GET` | `/studio` | web UI: prompt → sprite → preview → download |
-| `GET` | `/health` | liveness, queue depth and the active `output_dir` |
+| `GET` | `/api/result/{job_id}` | download the result file |
+| `GET` | `/api/outputs` | list generated files, newest first |
+| `DELETE` | `/api/job/{job_id}` | cancel a job and delete its result |
+| `GET` | `/studio` | the Studio web UI |
+| `GET` | `/health` | liveness, queue depth, active output dir |
 
-## Zealandia production prompt pack
+## Project layout
 
-The EverPlanet-inspired original production set for the whole route -
-Waitematā, the six ruin villages, the nine field maps and the three
-dungeons - is documented in `prompts/EVERPLANET_PRODUCTION_PACK.md`.
+| File | Role |
+|---|---|
+| `app.py` | FastAPI server + async job queue (one GPU worker) |
+| `static/studio.html` | the Studio web UI (single file) |
+| `pipeline_sprite.py` | text to sprite (SDXL-Turbo, rembg) |
+| `pipeline_3d.py` | image to 3D (Stable Fast 3D + gltfpack) |
+| `run_buildings_3d.py` | resumable batch converter |
+| `sprites.py` | batch sprite CLI |
+| `prompts/` | production prompt sets from our own games |
+| `docs/` | production standards and notes |
 
-• `prompts/everplanet_waitemata_buildings.txt`
-• `prompts/everplanet_waitemata_props.txt`
-• `prompts/everplanet_characters.txt`
-• `prompts/everplanet_dungeon_entrances.txt`
-• `prompts/everplanet_dungeon_assets.txt`
-• `prompts/everplanet_villages_buildings.txt`
-• `prompts/everplanet_villages_props.txt`
-• `prompts/everplanet_villages_characters.txt`
-• `prompts/everplanet_field_landmarks.txt`
-
-Run `git pull` on the GPU PC and the prompt files are ready. The Studio
-launcher mounts the pulled repo into the container, so prompt updates are
-available on the next server start without rebuilding the Docker image.
-
-## Quick start (GPU PC, Docker + GPU)
-
-```powershell
-git pull
-.\start-gui.bat
-```
-
-`start-gui.bat` is the normal live-server launcher.
-
-• It publishes the server on the GPU PC and on the same LAN.
-• Open `http://localhost:8000/studio` on the GPU PC.
-• Open `http://<GPU PC LAN IP>:8000/studio` on a laptop on the same network.
-• The GPU PC, Docker Desktop and the launcher window must stay on.
-• If the laptop cannot connect, allow Docker Desktop or TCP port 8000 through Windows Firewall for the Private network.
-
-## Output location: local
-
-Studio generations are written to the first matching location below.
-
-• `PLUSHY_OUTPUT_DIR`, when set before launch
-• The repo's local `outputs` folder
-
-The launcher prints the active output folder before the server starts.
-Outputs stay on the GPU PC (local only). The Studio gallery reads the same
-folder through `/api/outputs`, so the laptop can also browse and download
-the results. Result PNGs are not deleted when old job records expire.
-
-Batch CLI runs use the folder passed to `--output`; the production pack
-shows PowerShell commands that place each batch under the same local
-`outputs` tree.
-
-### One-off sprite (fastest path)
-
-```powershell
-docker run --rm --gpus all `
-  -v "${PWD}/my_sprites:/app/my_sprites" `
-  -v plushy-hf:/root/.cache/huggingface `
-  plushy-ai python sprites.py --prompt "a pine tree" --output /app/my_sprites
-```
-
-The SDXL-Turbo model downloads once (~7GB) into the `plushy-hf` volume -
-later runs reuse it.
-
-### Batch from a prompts file
-
-```powershell
-docker run --rm --gpus all `
-  -v "${PWD}/prompts.txt:/app/prompts.txt" `
-  -v "${PWD}/my_sprites:/app/my_sprites" `
-  -v plushy-hf:/root/.cache/huggingface `
-  plushy-ai python sprites.py --prompts /app/prompts.txt --output /app/my_sprites --seeds 3 --size 256
-```
-
-## Local smoke test (no GPU, placeholder output)
+## Smoke test (no GPU)
 
 ```powershell
 $env:PLUSHY_MOCK = "1"
 python sprites.py --prompt "a pine tree" --output ./mock_sprites
 ```
 
-`PLUSHY_MOCK=1` replaces generation with a checkerboard placeholder so the
-full CLI → API → GUI path can be tested without a GPU.
+`PLUSHY_MOCK=1` swaps generation for a placeholder so the whole
+CLI to API to UI path can be tested without a GPU.
 
-## Notes
+## Notes and limits
 
-• Prompt tips: keep it simple - "a pine tree", "a wooden park bench".
-• The pipeline appends `game sprite, centered, isolated on a plain white background` and strips the background automatically.
-• First real generation takes a few minutes (model download); after that it's seconds.
-• The LAN server has no login. Use it only on a trusted home or office network and do not forward port 8000 to the internet.
+- 3D quality follows the source image: one clean object on a plain
+  white background converts best.
+- Conversion takes roughly 4 minutes per model on an RTX 4060.
+- The LAN server has no login. Use it only on a trusted network and
+  do not forward port 8000 to the internet.
+- Outputs stay on your machine (the repo's `outputs` folder by
+  default, or `PLUSHY_OUTPUT_DIR` when set).
+
+## License
+
+MIT - free for personal and commercial use. See `LICENSE`.
+
+Plushy AI is made by [Espil](https://espil.online); it is the tool we
+use to produce assets for our own games. If it helps you, a star on
+the repo is the best thank-you.
