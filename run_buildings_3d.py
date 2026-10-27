@@ -44,6 +44,8 @@ def main() -> int:
     ap.add_argument("--out", default=None)
     ap.add_argument("--only", default=None, help="comma-separated asset names")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--texture", type=int, default=1024, choices=(512, 1024, 2048),
+                    help="SF3D texture resolution (v2 batches use 2048)")
     args = ap.parse_args()
 
     out_dir = Path(args.out) if args.out else (
@@ -79,7 +81,7 @@ def main() -> int:
         try:
             actual, stats = pipe.image_to_glb(
                 src, dest,
-                Model3DOptions(texture_resolution=1024, tri_budget=budget),
+                Model3DOptions(texture_resolution=args.texture, tri_budget=budget),
                 progress=lambda p, m: print(f"{tag}: {p:.0%} {m}", flush=True))
             print(f"{tag}: DONE {actual.name} - {stats['triangles']} tris, "
                   f"{stats['bytes'] // 1024} KB, {time.time() - t0:.0f}s", flush=True)

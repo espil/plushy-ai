@@ -1,0 +1,77 @@
+{
+ "assets": [
+  {
+   "asset": "b01_espil_house",
+   "source": "b01_espil_house.jpg"
+  },
+  {
+   "asset": "b02_storyteller_cottage",
+   "source": "b02_storyteller_cottage.jpg"
+  },
+  {
+   "asset": "b03_cottage_blue",
+   "source": "b03_cottage_blue.jpg"
+  },
+  {
+   "asset": "b04_family_house",
+   "source": "b04_family_house.jpg"
+  },
+  {
+   "asset": "b05_house_honey",
+   "source": "b05_house_honey.jpg"
+  },
+  {
+   "asset": "b06_fisherman_cottage",
+   "source": "b06_fisherman_cottage.jpg"
+  },
+  {
+   "asset": "b07_farmer_house",
+   "source": "b07_farmer_house.jpg"
+  },
+  {
+   "asset": "b08_elder_cottage",
+   "source": "b08_elder_cottage.jpg"
+  },
+  {
+   "asset": "b09_chief_hall",
+   "source": "b09_chief_hall.jpg",
+   "landmark": true
+  },
+  {
+   "asset": "b10_inn_tavern",
+   "source": "b10_inn_tavern.jpg"
+  },
+  {
+   "asset": "b11_market_hall",
+   "source": "b11_market_hall.jpg"
+  },
+  {
+   "asset": "b12_workshop",
+   "source": "b12_workshop.jpg"
+  },
+  {
+   "asset": "b13_kitchen_hall",
+   "source": "b13_kitchen_hall.jpg"
+  },
+  {
+   "asset": "b14_healer_house",
+   "source": "b14_healer_house.jpg"
+  },
+  {
+   "asset": "b15_south_gate",
+   "source": "b15_south_gate.jpg"
+  },
+  {
+   "asset": "b16_watchtower",
+   "source": "b16_watchtower.jpg"
+  },
+  {
+   "asset": "b17_storage_barn",
+   "source": "b17_storage_barn.jpg"
+  },
+  {
+   "asset": "b18_harbor_storehouse",
+   "source": "b18_harbor_storehouse.jpg"
+  }
+ ]
+}
