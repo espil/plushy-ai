@@ -67,8 +67,9 @@ def main() -> int:
         src = inputs / entry["source"]
         dest = out_dir / f"{asset}.glb"
         sidecar = Path(str(dest) + ".json")
+        twin = out_dir / f"{asset}_uncompressed.glb"
         tag = f"[{i}/{len(assets)}] {asset}"
-        if dest.exists() and sidecar.exists() and not args.force:
+        if dest.exists() and sidecar.exists() and twin.exists() and not args.force:
             print(f"{tag}: SKIP (already produced)", flush=True)
             skipped.append(asset)
             continue

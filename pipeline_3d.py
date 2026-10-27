@@ -421,6 +421,23 @@ class Model3DPipeline:
                           "texture_resolution": tex,
                           "tri_budget": options.tri_budget, "gltfpack": True})
             shutil.copyfile(final, dest)
+            # Unity-safe twin: the same model WITHOUT meshopt compression.
+            # Loaders without a meshopt decoder (Unity glTFast etc.) cannot
+            # open the compressed file at all when the extension is marked
+            # required, so every building job also emits an uncompressed
+            # copy next to the compressed one (Zealandia room request for
+            # the Unity rebuild, 2026-10-27). The batch runner's skip rule
+            # requires the twin, so a job counts as done only when both
+            # files exist.
+            twin = dest.with_name(dest.stem + "_uncompressed.glb")
+            gp = os.getenv("PLUSHY_GLTFPACK") or shutil.which("gltfpack")
+            proc = subprocess.run([gp, "-i", str(final), "-o", str(twin), "-noq"],
+                                  capture_output=True, text=True, timeout=900)
+            if proc.returncode != 0 or not twin.exists():
+                tail = (proc.stderr or proc.stdout or "")[-1200:]
+                raise RuntimeError(
+                    f"gltfpack uncompressed twin failed (exit {proc.returncode}): {tail}")
+            stats["uncompressed_twin"] = twin.name
             _write_sidecar(dest, stats)
             progress(1.0, "done")
             log.info("model3d done: %s (%s)", dest, stats)
