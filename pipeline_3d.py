@@ -116,6 +116,30 @@ def _nvidia_lib_dirs() -> list[str]:
     return dirs
 
 
+def _disable_unusable_tensorrt() -> None:
+    """Rename the TensorRT provider library out of the SF3D venv.
+
+    The onnxruntime wheel ships a TensorRT provider, so rembg
+    requests it for every session - but the TensorRT runtime itself
+    (libnvinfer) is not installed and never will be in this image,
+    so every session prints a red provider-load FAIL block before
+    falling back to CUDA. The conversion is unaffected, yet the
+    block looks exactly like a failure to anyone watching the
+    console (Han flagged it repeatedly, 2026-10-25/26). Removing
+    the provider we cannot use makes onnxruntime stop offering it:
+    sessions then request CUDA + CPU only and the block is gone.
+    Reversible (rename, not delete) and a no-op when already done.
+    """
+    try:
+        so = (SF3D_PYTHON.parent.parent / "lib" / "python3.10"
+              / "site-packages" / "onnxruntime" / "capi"
+              / "libonnxruntime_providers_tensorrt.so")
+        if so.exists():
+            so.rename(so.with_name(so.name + ".disabled"))
+    except OSError:
+        pass
+
+
 def _sf3d_env(offline: bool = False) -> dict:
     env = dict(os.environ, PYTHONUNBUFFERED="1",
                U2NET_HOME=str(_u2net_home()))
@@ -147,6 +171,7 @@ def repo_cache_complete(repo_id: str) -> bool:
 def ensure_assets_cached(progress: ProgressCallback = lambda p, m: None) -> None:
     """Download + verify every asset SF3D needs, with visible progress.
     Raises RuntimeError naming whatever could not be cached."""
+    _disable_unusable_tensorrt()
     from huggingface_hub import snapshot_download
 
     for repo in PREFETCH_REPOS:
