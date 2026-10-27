@@ -330,7 +330,13 @@ class Model3DPipeline:
         progress = progress or (lambda p, m: None)
         dest = Path(dest)
         dest.parent.mkdir(parents=True, exist_ok=True)
-        image_path = Path(image_path)
+        # Resolve to an absolute path: the SF3D subprocess runs with
+        # cwd=SF3D_HOME, so a relative input path that exists from
+        # this process's cwd would not be found there (this exact bug
+        # failed the villages+caves batch on 2026-10-26 - the batch
+        # bat passed a relative --inputs while the Waitemata default
+        # was absolute, which is why only the new batch broke).
+        image_path = Path(image_path).resolve()
         if not image_path.exists():
             raise FileNotFoundError(f"input image not found: {image_path}")
 

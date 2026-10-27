@@ -48,8 +48,9 @@ def main() -> int:
 
     out_dir = Path(args.out) if args.out else (
         Path(os.getenv("PLUSHY_OUTPUT_DIR", BASE / "outputs")) / "models3d")
+    out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    inputs = Path(args.inputs)
+    inputs = Path(args.inputs).resolve()
     manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     assets = manifest["assets"]
     if args.only:
