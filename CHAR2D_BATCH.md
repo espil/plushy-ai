@@ -1,3 +1,5 @@
+# SUPERSEDED 2026-11-10 - this batch produced garbage and is discarded. Use CHAR2D_SAMPLE.md.
+
 # 2D Character - Perfection Line Batch (Plushy AI, GPU PC)
 
 Production route decided by Han (2026-11-10): the 2D character line is produced
