@@ -1,8 +1,0 @@
-# 2D character SAMPLE body, MALE side stand - perfection line (asset room, 2026-11-10)
-# Corrected batch: the first 12-pose batch produced garbage and was discarded.
-# Two causes: the prompts were long compound sentences (SDXL-Turbo follows the
-# short comma-phrase grammar of this repo's proven prompt files), and the batch
-# ignored the sample-first rule. This file is ONE pose only, 4 seeds to pick from.
-# Run: see CHAR2D_SAMPLE.md step 1.
-
-bald chibi boy, huge round head, tiny body, stubby arms and legs, blank faceless, white sleeveless undershirt, white shorts, bare feet, flat cel shading, side view facing west, standing pose, arms at sides
