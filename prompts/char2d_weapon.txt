@@ -1,0 +1,7 @@
+# 2D weapon, sample look - perfection line (asset room, 2026-11-10)
+# The ice longsword ships as a separate layer; its grip (handle) coordinates are
+# registered in the asset room so the handle always sits in the hand, blade up.
+# Han's weapon rules: the name decides the form; the grip must be held in the
+# hand; the blade points up. Run: see CHAR2D_BATCH.md step 3.
+
+a single elegant ice longsword, long straight pale blue crystal blade pointing straight up, wrapped handle grip under a crystal crossguard, a small round pommel at the very bottom, flat cel shading in four value steps, warm dark brown outlines
