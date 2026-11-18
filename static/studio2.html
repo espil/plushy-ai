@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plushy AI Studio 2.0</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, -apple-system, sans-serif; max-width: 960px;
+         margin: 2rem auto; padding: 0 1.2rem; background: #141414; color: #eee; }
+  h1 { font-size: 1.6rem; }
+  h1 small { color: #888; font-weight: normal; font-size: 0.9rem; }
+  h3 { margin-top: 0; }
+  .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px;
+          padding: 1.2rem; margin-bottom: 1rem; }
+  .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; margin-top: .8rem; }
+  label { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: #aaa; }
+  label.full { width: 100%; }
+  select, input[type=number], input[type=text], textarea { background: #222; color: #eee;
+          border: 1px solid #444; border-radius: 8px; padding: .5rem .7rem; font-size: 1rem; }
+  textarea { width: 100%; min-height: 3rem; resize: vertical; box-sizing: border-box; }
+  button.go { background: #3a7bd5; color: #fff; border: none; border-radius: 8px;
+          padding: .7rem 1.4rem; font-size: 1rem; cursor: pointer; }
+  button.go:disabled { background: #444; cursor: wait; }
+  button.tool { background: #2a2a2a; color: #ccc; border: 1px solid #444; border-radius: 8px;
+          padding: .5rem 1rem; cursor: pointer; }
+  button.tool.active { background: #3a7bd5; color: #fff; }
+  .progress { height: 10px; background: #222; border-radius: 6px; overflow: hidden;
+          margin: .4rem 0 .2rem; }
+  .bar { height: 100%; width: 0%; background: #3a7bd5; transition: width .3s; }
+  .status { color: #aaa; font-size: .85rem; min-height: 1.2em; white-space: pre-wrap; }
+  .error { color: #f66; font-size: .9rem; white-space: pre-wrap; margin-top: .5rem; }
+  .jobcard { background: #222; border: 1px solid #3a3a3a; border-radius: 8px;
+          padding: .6rem .8rem; margin-top: .6rem; white-space: pre-wrap; font-size: .85rem; }
+  .checker { background: repeating-conic-gradient(#2a2a2a 0 25%, #1a1a1a 0 50%) 0 0/24px 24px; }
+  img.preview { max-width: 320px; max-height: 320px; border-radius: 8px;
+          border: 1px solid #444; margin-top: .4rem; display: none; }
+  img.wide { max-width: 100%; }
+  #maskCanvas { max-width: 100%; border: 1px solid #444; border-radius: 8px;
+          margin-top: .4rem; display: none; cursor: crosshair; }
+  pre.facts { background: #181818; border: 1px solid #333; border-radius: 8px;
+          padding: .6rem .8rem; font-size: .78rem; overflow-x: auto; white-space: pre-wrap; }
+  .note { color: #777; font-size: .8rem; margin-top: .6rem; }
+  a.dl { color: #fff; background: #2563eb; text-decoration: none; border-radius: 6px;
+          padding: .4rem .8rem; font-weight: 600; display: inline-block; margin: .2rem .3rem 0 0; }
+</style>
+</head>
+<body>
+<h1>Plushy AI Studio <small>2.0 - reference to export, on the 2.0 endpoints only</small></h1>
+<div class="error" id="globalError"></div>
+<div class="note" id="bootstrapNote">Loading categories and style profiles...</div>
+
+<section class="card" id="screen-input">
+  <h3>1. Input - reference image</h3>
+  <label class="full">Reference image (PNG / JPG / WEBP, validated server-side)
+    <input type="file" id="refFile" accept="image/png,image/jpeg,image/webp">
+  </label>
+  <div class="row">
+    <button class="go" id="refUploadBtn">Upload and analyze reference</button>
+  </div>
+  <img id="refPreview" class="preview checker" alt="reference preview">
+  <pre class="facts" id="refInfo">No reference uploaded yet.</pre>
+</section>
+
+<section class="card" id="screen-category">
+  <h3>2. Category - generation target</h3>
+  <label>Category
+    <select id="categorySelect"></select>
+  </label>
+  <div class="status" id="categoryInfo"></div>
+</section>
+
+<section class="card" id="screen-region">
+  <h3>3. Region - mask edit</h3>
+  <div class="row">
+    <button class="tool active" id="maskToolAdd">Add rectangle</button>
+    <button class="tool" id="maskToolRemove">Remove rectangle</button>
+    <button class="tool" id="maskSuggestBtn">Load suggested mask</button>
+    <button class="tool" id="maskClearBtn">Clear</button>
+  </div>
+  <canvas id="maskCanvas" width="64" height="64"></canvas>
+  <div class="note">Drag on the image to draw a rectangle. A suggested mask is a
+    proposal only: it never becomes the generation target until you save the
+    mask with the confirm box checked.</div>
+  <label style="flex-direction:row; align-items:center; gap:.4rem; margin-top:.6rem">
+    <input type="checkbox" id="maskConfirm"> I confirm this mask as the target region
+  </label>
+  <div class="row">
+    <button class="go" id="maskSaveBtn">Save mask</button>
+  </div>
+  <pre class="facts" id="maskInfo">No mask saved yet.</pre>
+  <div class="status" id="maskRectList"></div>
+</section>
+
+<section class="card" id="screen-standard">
+  <h3>4. Reference Standard - asset standard and style profile</h3>
+  <label class="full">Analyze an image or Aseprite file against the asset standard
+    <input type="file" id="assetFile">
+  </label>
+  <div class="row">
+    <button class="go" id="assetAnalyzeBtn">Analyze asset</button>
+  </div>
+  <pre class="facts" id="assetInfo">No asset analyzed yet.</pre>
+  <label style="margin-top:.6rem">Style profile
+    <select id="profileSelect"></select>
+  </label>
+  <pre class="facts" id="profileInfo"></pre>
+</section>
+
+<section class="card" id="screen-generate">
+  <h3>5. Generate</h3>
+  <label class="full">Prompt
+    <textarea id="prompt" placeholder="a red hoodie"></textarea>
+  </label>
+  <label class="full" style="margin-top:.6rem">Negative prompt (empty = pipeline default)
+    <textarea id="negativePrompt"></textarea>
+  </label>
+  <div class="row">
+    <label>Seed
+      <input type="number" id="seedInput" value="0" min="0" style="width:6rem">
+    </label>
+    <label>Variations
+      <input type="number" id="variationsInput" value="1" min="1" max="8" style="width:5rem">
+    </label>
+    <label>Size
+      <select id="sizeSelect">
+        <option value="64">64 px</option>
+        <option value="128">128 px</option>
+        <option value="256">256 px</option>
+        <option value="512" selected>512 px</option>
+      </select>
+    </label>
+    <label>Steps
+      <input type="number" id="stepsInput" value="6" min="1" max="12" style="width:5rem">
+    </label>
+    <label>img2img strength <span id="strengthVal">0.6</span>
+      <input type="range" id="strengthInput" min="0.1" max="1" step="0.05" value="0.6">
+    </label>
+    <label style="flex-direction:row; align-items:center; gap:.4rem">
+      <input type="checkbox" id="claimRegion"> Target the confirmed mask region
+    </label>
+    <button class="go" id="generateBtn">Generate</button>
+  </div>
+  <div class="progress"><div class="bar" id="genProgressBar"></div></div>
+  <div class="status" id="genStatus"></div>
+  <div id="genOutputs"></div>
+  <div class="note">With a reference uploaded, generation runs img2img over the
+    whole reference unless a confirmed mask region is claimed. Mask-based
+    inpainting is unsupported by the current pipeline and is never faked.</div>
+</section>
+
+<section class="card" id="screen-compare">
+  <h3>6. Compare - original vs generated</h3>
+  <div class="row">
+    <button class="go" id="compareBtn">Compare last generation with the reference</button>
+  </div>
+  <img id="compareImg" class="preview wide checker" alt="side by side comparison">
+  <pre class="facts" id="compareFacts">No comparison yet. Facts are measured only - no quality score is invented.</pre>
+</section>
+
+<section class="card" id="screen-paperdoll">
+  <h3>7. Paper Doll Preview - fit the generated layer</h3>
+  <div class="status" id="bodySourceNote">Body: the uploaded reference image. Layer: the last generation output.</div>
+  <div class="row">
+    <label>Layer slot
+      <select id="fitSlot">
+        <option value="hair_back">hair_back</option>
+        <option value="bottoms">bottoms</option>
+        <option value="tops" selected>tops</option>
+        <option value="shoes">shoes</option>
+        <option value="face">face</option>
+        <option value="hair_front">hair_front</option>
+      </select>
+    </label>
+    <button class="go" id="fitBtn">Fit preview</button>
+  </div>
+  <img id="fitImg" class="preview checker" alt="paper doll composite">
+  <pre class="facts" id="fitInfo">No fit yet. Canvas sizes are validated, never silently resized; directions without a body are reported missing.</pre>
+</section>
+
+<section class="card" id="screen-export">
+  <h3>8. Export</h3>
+  <div class="row">
+    <label>Source
+      <select id="exportSource">
+        <option value="generation" selected>Last generation (layers)</option>
+        <option value="fitting">Last fit (direction sheet)</option>
+      </select>
+    </label>
+    <label>Asset id
+      <input type="text" id="exportAssetId" placeholder="my_asset">
+    </label>
+    <label style="flex-direction:row; align-items:center; gap:.4rem">
+      <input type="checkbox" id="exportAseprite"> Also write layered .aseprite
+    </label>
+    <button class="go" id="exportBtn">Export</button>
+  </div>
+  <pre class="facts" id="exportInfo">No export yet. Validation states (ok / missing / needs_review) are shown from the export manifest.</pre>
+  <div id="exportLinks"></div>
+</section>
+
+<section class="card" id="screen-history">
+  <h3>9. History</h3>
+  <div class="row">
+    <button class="go" id="historyBtn">Refresh history</button>
+  </div>
+  <div id="historyList"><div class="status">No jobs yet.</div></div>
+</section>
+
+<script>
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const S = {
+  reference: null, maskId: null, rects: [], tool: 'add',
+  lastJob: null, lastFit: null, profiles: [],
+};
+
+function showError(msg) { $('globalError').textContent = msg || ''; }
+function fileUrl(rel) { return '/api/studio2/files?path=' + encodeURIComponent(rel); }
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error('HTTP ' + r.status + ': ' + t.slice(0, 300));
+  }
+  return r.json();
+}
+function apiJson(path, body, method) {
+  return api(path, {
+    method: method || 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+// ---------------------------------------------------------------- bootstrap
+async function loadBootstrap() {
+  try {
+    const b = await api('/api/studio2/bootstrap');
+    for (const c of b.categories) {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      $('categorySelect').appendChild(o);
+    }
+    S.profiles = b.profiles;
+    for (const p of b.profiles) {
+      const o = document.createElement('option');
+      o.value = p.profile_id;
+      o.textContent = p.enabled
+        ? p.profile_id + ' (' + p.rendering_mode + ')'
+        : p.profile_id + ' (disabled: ' + p.disabled_reason + ')';
+      o.disabled = !p.enabled;
+      $('profileSelect').appendChild(o);
+    }
+    showProfileInfo();
+    $('bootstrapNote').textContent =
+      'Categories and profiles loaded from the 2.0 service. Inpainting: ' +
+      b.inpainting.status + ' - ' + b.inpainting.reason;
+  } catch (e) {
+    showError('bootstrap failed: ' + (e.message || e));
+  }
+}
+function showProfileInfo() {
+  const p = S.profiles.find(x => x.profile_id === $('profileSelect').value);
+  $('profileInfo').textContent = p ? JSON.stringify(p, null, 2) : '';
+}
+$('profileSelect').addEventListener('change', showProfileInfo);
+$('categorySelect').addEventListener('change', () => {
+  $('categoryInfo').textContent = 'Category: ' + $('categorySelect').value;
+});
+
+// ---------------------------------------------------------------- input
+$('refUploadBtn').addEventListener('click', async () => {
+  showError('');
+  const f = $('refFile').files[0];
+  if (!f) { showError('Pick a reference image first.'); return; }
+  try {
+    const fd = new FormData();
+    fd.append('file', f);
+    fd.append('category', $('categorySelect').value);
+    const rec = await api('/api/reference/analyze', { method: 'POST', body: fd });
+    S.reference = rec;
+    S.maskId = null;
+    S.rects = [];
+    $('refInfo').textContent = JSON.stringify(rec, null, 2);
+    const url = fileUrl('references/' + rec.source.stored_filename);
+    $('refPreview').src = url;
+    $('refPreview').style.display = 'block';
+    loadMaskImage(url, rec.asset_standard.canvas.width, rec.asset_standard.canvas.height);
+    $('maskInfo').textContent = 'Reference loaded. Draw a mask or load the suggestion.';
+  } catch (e) { showError('reference upload failed: ' + (e.message || e)); }
+});
+
+// ---------------------------------------------------------------- region
+let maskImg = null;
+function loadMaskImage(url, w, h) {
+  const img = new Image();
+  img.onload = () => {
+    maskImg = img;
+    $('maskCanvas').width = w;
+    $('maskCanvas').height = h;
+    $('maskCanvas').style.display = 'block';
+    drawMask();
+  };
+  img.src = url;
+}
+function drawMask() {
+  const cv = $('maskCanvas');
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  if (maskImg) ctx.drawImage(maskImg, 0, 0, cv.width, cv.height);
+  for (const r of S.rects) {
+    ctx.fillStyle = r.op === 'remove' ? 'rgba(220,60,60,0.35)' : 'rgba(60,200,120,0.35)';
+    ctx.fillRect(r.x, r.y, r.width, r.height);
+    ctx.strokeStyle = r.op === 'remove' ? '#dc3c3c' : '#3cc878';
+    ctx.strokeRect(r.x, r.y, r.width, r.height);
+  }
+  $('maskRectList').textContent = S.rects.length
+    ? 'Rectangles: ' + S.rects.map(r =>
+        r.op + ' (' + r.x + ',' + r.y + ' ' + r.width + 'x' + r.height + ')').join('  ')
+    : 'No rectangles drawn.';
+}
+let dragStart = null;
+function canvasPos(ev) {
+  const cv = $('maskCanvas');
+  const box = cv.getBoundingClientRect();
+  return {
+    x: Math.round((ev.clientX - box.left) * cv.width / box.width),
+    y: Math.round((ev.clientY - box.top) * cv.height / box.height),
+  };
+}
+$('maskCanvas').addEventListener('mousedown', ev => { dragStart = canvasPos(ev); });
+$('maskCanvas').addEventListener('mouseup', ev => {
+  if (!dragStart) return;
+  const end = canvasPos(ev);
+  const x = Math.min(dragStart.x, end.x), y = Math.min(dragStart.y, end.y);
+  const w = Math.abs(end.x - dragStart.x), h = Math.abs(end.y - dragStart.y);
+  dragStart = null;
+  if (w < 1 || h < 1) return;
+  S.rects.push({ x, y, width: w, height: h, op: S.tool });
+  drawMask();
+});
+$('maskToolAdd').addEventListener('click', () => {
+  S.tool = 'add';
+  $('maskToolAdd').classList.add('active');
+  $('maskToolRemove').classList.remove('active');
+});
+$('maskToolRemove').addEventListener('click', () => {
+  S.tool = 'remove';
+  $('maskToolRemove').classList.add('active');
+  $('maskToolAdd').classList.remove('active');
+});
+$('maskClearBtn').addEventListener('click', () => { S.rects = []; drawMask(); });
+$('maskSuggestBtn').addEventListener('click', async () => {
+  showError('');
+  if (!S.reference) { showError('Upload a reference first.'); return; }
+  try {
+    const s = await apiJson('/api/masks', {
+      reference_id: S.reference.reference_id, suggest_only: true,
+    });
+    if (s.bounds) {
+      S.rects = [{ x: s.bounds.x, y: s.bounds.y, width: s.bounds.width,
+                    height: s.bounds.height, op: 'add' }];
+    } else {
+      S.rects = [];
+    }
+    drawMask();
+    $('maskInfo').textContent =
+      'Suggestion loaded (unconfirmed): ' + JSON.stringify(s) +
+      '\nIt is NOT a generation target until you save it with the confirm box checked.';
+  } catch (e) { showError('suggestion failed: ' + (e.message || e)); }
+});
+$('maskSaveBtn').addEventListener('click', async () => {
+  showError('');
+  if (!S.reference) { showError('Upload a reference first.'); return; }
+  try {
+    const rec = await apiJson('/api/masks', {
+      reference_id: S.reference.reference_id,
+      base: 'empty',
+      rectangles: S.rects,
+      confirmed: $('maskConfirm').checked,
+      category: $('categorySelect').value,
+    });
+    S.maskId = rec.mask_id;
+    $('maskInfo').textContent = JSON.stringify(rec, null, 2);
+  } catch (e) { showError('mask save failed: ' + (e.message || e)); }
+});
+
+// ---------------------------------------------------------------- standard
+$('assetAnalyzeBtn').addEventListener('click', async () => {
+  showError('');
+  const f = $('assetFile').files[0];
+  if (!f) { showError('Pick an asset file first.'); return; }
+  try {
+    const fd = new FormData();
+    fd.append('file', f);
+    const out = await api('/api/assets/analyze', { method: 'POST', body: fd });
+    $('assetInfo').textContent = JSON.stringify(out, null, 2);
+  } catch (e) { showError('asset analyze failed: ' + (e.message || e)); }
+});
+
+// ---------------------------------------------------------------- generate
+$('strengthInput').addEventListener('input', () => {
+  $('strengthVal').textContent = $('strengthInput').value;
+});
+$('generateBtn').addEventListener('click', async () => {
+  showError('');
+  const prompt = $('prompt').value.trim();
+  if (!prompt) { showError('Type a prompt first.'); return; }
+  const body = {
+    prompt,
+    negative_prompt: $('negativePrompt').value.trim() || null,
+    category: $('categorySelect').value,
+    profile_id: $('profileSelect').value,
+    seed: Math.max(0, parseInt($('seedInput').value || 0)),
+    variations: Math.max(1, parseInt($('variationsInput').value || 1)),
+    size: parseInt($('sizeSelect').value),
+    steps: Math.max(1, parseInt($('stepsInput').value || 6)),
+    strength: parseFloat($('strengthInput').value),
+    reference_id: S.reference ? S.reference.reference_id : null,
+    claim_region: $('claimRegion').checked,
+    mask_id: S.maskId,
+  };
+  $('generateBtn').disabled = true;
+  try {
+    let view = await apiJson('/api/assets/generate', body);
+    for (;;) {
+      $('genProgressBar').style.width = Math.round((view.progress || 0) * 100) + '%';
+      $('genStatus').textContent =
+        'job ' + view.job_id + ' - ' + view.status +
+        (view.backend ? ' - backend: ' + view.backend +
+          (view.backend === 'mock' ? ' (MOCK placeholders, not model output)' : '') : '') +
+        (view.message ? ' - ' + view.message : '');
+      if (view.status === 'completed') break;
+      if (view.status === 'failed' || view.status === 'cancelled') {
+        throw new Error('job ' + view.status + (view.error ? ': ' + view.error : ''));
+      }
+      await sleep(1000);
+      view = await api('/api/jobs/' + view.job_id);
+    }
+    S.lastJob = view;
+    const box = $('genOutputs');
+    while (box.firstChild) box.removeChild(box.firstChild);
+    for (const rel of view.result.output_files || []) {
+      const img = document.createElement('img');
+      img.src = fileUrl(rel);
+      img.className = 'preview checker';
+      img.style.display = 'inline-block';
+      img.alt = rel;
+      box.appendChild(img);
+    }
+    loadHistory();
+  } catch (e) {
+    showError('generation failed: ' + (e.message || e));
+  } finally {
+    $('generateBtn').disabled = false;
+  }
+});
+
+// ---------------------------------------------------------------- compare
+$('compareBtn').addEventListener('click', async () => {
+  showError('');
+  if (!S.lastJob) { showError('Generate something first.'); return; }
+  try {
+    const rec = await apiJson('/api/compare', {
+      job_id: S.lastJob.job_id,
+      baseline_reference_id: S.reference ? S.reference.reference_id : null,
+    });
+    $('compareFacts').textContent = JSON.stringify(rec, null, 2);
+    if (rec.side_by_side && rec.side_by_side.file) {
+      $('compareImg').src = fileUrl(rec.side_by_side.file);
+      $('compareImg').style.display = 'block';
+    }
+  } catch (e) { showError('compare failed: ' + (e.message || e)); }
+});
+
+// ---------------------------------------------------------------- paper doll
+$('fitBtn').addEventListener('click', async () => {
+  showError('');
+  if (!S.reference) { showError('Upload a reference (the body) first.'); return; }
+  if (!S.lastJob) { showError('Generate a layer first.'); return; }
+  try {
+    const manifest = await apiJson('/api/paperdoll/compose', {
+      body: { reference_id: S.reference.reference_id },
+      layer: { job_id: S.lastJob.job_id },
+      slot: $('fitSlot').value,
+    });
+    S.lastFit = manifest;
+    $('fitInfo').textContent = JSON.stringify(manifest, null, 2);
+    for (const e of manifest.entries || []) {
+      if (e.direction === 'S' && e.outputs && e.outputs.composite &&
+          e.outputs.composite.file) {
+        $('fitImg').src = fileUrl(e.outputs.composite.file);
+        $('fitImg').style.display = 'block';
+      }
+    }
+  } catch (e) { showError('fit failed: ' + (e.message || e)); }
+});
+
+// ---------------------------------------------------------------- export
+$('exportBtn').addEventListener('click', async () => {
+  showError('');
+  const source = $('exportSource').value;
+  const body = {
+    source_type: source,
+    aseprite: $('exportAseprite').checked,
+    asset_id: $('exportAssetId').value.trim() || null,
+  };
+  if (source === 'generation') {
+    if (!S.lastJob) { showError('Generate something first.'); return; }
+    body.job_id = S.lastJob.job_id;
+  } else {
+    if (!S.lastFit) { showError('Run a fit first.'); return; }
+    body.fit_id = S.lastFit.fit_id;
+  }
+  try {
+    const out = await apiJson('/api/export', body);
+    $('exportInfo').textContent = JSON.stringify(out, null, 2);
+    const box = $('exportLinks');
+    while (box.firstChild) box.removeChild(box.firstChild);
+    const names = (out.manifest.outputs.png_copies || []).slice();
+    if (out.manifest.outputs.sprite_sheet) {
+      names.push(out.manifest.outputs.sprite_sheet.filename);
+    }
+    if (out.manifest.outputs.aseprite &&
+        out.manifest.outputs.aseprite.status === 'ok') {
+      names.push(out.manifest.outputs.aseprite.filename);
+    }
+    names.push('export_manifest.json');
+    for (const n of names) {
+      const a = document.createElement('a');
+      a.className = 'dl';
+      a.href = fileUrl(out.export_dir + '/' + n);
+      a.download = n;
+      a.textContent = n;
+      box.appendChild(a);
+    }
+  } catch (e) { showError('export failed: ' + (e.message || e)); }
+});
+
+// ---------------------------------------------------------------- history
+async function loadHistory() {
+  try {
+    const data = await api('/api/jobs');
+    const box = $('historyList');
+    while (box.firstChild) box.removeChild(box.firstChild);
+    if (!data.jobs.length) {
+      const d = document.createElement('div');
+      d.className = 'status';
+      d.textContent = 'No jobs yet.';
+      box.appendChild(d);
+      return;
+    }
+    for (const j of data.jobs) {
+      const card = document.createElement('div');
+      card.className = 'jobcard';
+      const p = j.params || {};
+      const lines = [
+        j.job_id + ' - ' + j.kind + ' - ' + j.status,
+        'backend: ' + (j.backend || 'unknown') +
+          (j.backend === 'mock' ? ' (MOCK placeholders, not model output)' : ''),
+        'prompt: ' + (p.prompt || ''),
+        'category: ' + (p.category || '-') + '  profile: ' + (p.profile_id || '-') +
+          '  seed: ' + (p.seed === undefined ? '-' : p.seed) +
+          '  variations: ' + (p.variations === undefined ? '-' : p.variations),
+      ];
+      if (j.error) lines.push('error: ' + j.error);
+      card.textContent = lines.join('\n');
+      box.appendChild(card);
+    }
+  } catch (e) { showError('history failed: ' + (e.message || e)); }
+}
+$('historyBtn').addEventListener('click', loadHistory);
+
+loadBootstrap();
+loadHistory();
+</script>
+</body>
+</html>
