@@ -1,18 +1,24 @@
-# Plushy AI
+# Plushy AI - Free Local AI Sprite & 3D Generator for Game Developers
 
 **Free, local AI asset generation for game developers - on your own GPU.**
 
-Plushy AI turns text prompts into transparent game sprites, and images
-into textured 3D models (GLB), entirely on your own machine. No cloud,
-no per-generation fees, nothing uploaded anywhere.
-
-## What it does
+Plushy AI is a local AI sprite generator and image-to-3D tool that
+runs entirely on your own machine. Turn a text prompt into a
+transparent PNG game sprite, or one image into a textured 3D model
+(GLB) decimated to a game-ready triangle budget. No cloud, no
+per-generation fees, nothing uploaded anywhere - your art never
+leaves your computer.
 
 | Mode | Input | Output |
 |---|---|---|
-| Sprite generation | a text prompt | transparent PNG sprite (SDXL-Turbo + rembg), ~5 s on an RTX 4060 |
-| Image to 3D | one image (plain white background works best) | textured GLB via Stable Fast 3D, decimated to a game triangle budget, meshopt-compressed **plus** an uncompressed twin for loaders without meshopt support (e.g. Unity glTFast) |
+| Text to sprite | a text prompt | transparent PNG sprite (SDXL-Turbo + rembg), ~5 s on an RTX 4060 |
+| Image to 3D | one image (plain white background works best) | textured GLB via Stable Fast 3D, 8,000-triangle budget by default (20,000 for landmarks), meshopt-compressed plus an uncompressed twin |
 | Batch production | a folder of images + a JSON manifest | a whole set converted unattended and resumable |
+
+One page runs everything: **Plushy AI Studio**, a local web UI with
+live job progress and an in-browser 3D preview of your models.
+Requirements: an NVIDIA GPU (8 GB VRAM or more) and Docker.
+Version 1.0 is available now; version 2.0 is in development.
 
 3D budgets by default: 8,000 triangles per normal model, 20,000 for
 landmarks, textures at 1024-2048.
