@@ -678,11 +678,29 @@ class Studio2Service:
                 asset_id=_safe_token(asset_id, "export"))
         except _LIBRARY_ERRORS as e:
             raise Studio2Error(str(e)) from e
-        return {
+        result = {
             "export_id": export_id,
             "export_dir": self._rel(out_dir),
             "manifest": manifest,
         }
+        # Web-drive saving (2.0, Han 2026-11-24): exports also land
+        # on the configured web drive. Best-effort by design - the
+        # report rides along in the result and a drive failure
+        # never fails the export itself.
+        result["webdrive"] = self.sync_to_webdrive()
+        return result
+
+    def sync_to_webdrive(self) -> dict:
+        """Mirror this service's whole data root to the web drive.
+
+        Returns the mirror report ({status: disabled|ok|error,
+        ...}); never raises. Disabled unless PLUSHY_WEBDRIVE_DIR
+        points at a (synced) web-drive folder - see
+        studio2.webdrive.
+        """
+        from .webdrive import sync_service_root
+
+        return sync_service_root(self.root)
 
     # -- file serving -------------------------------------------------------
 
