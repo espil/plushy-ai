@@ -24,6 +24,11 @@ from .service import (
     Studio2Error,
     Studio2Service,
 )
+from .webdrive import (
+    ENV_VAR as WEBDRIVE_ENV_VAR,
+    sync_service_root,
+    webdrive_dir,
+)
 
 __all__ = [
     "JOB_STATUSES",
@@ -31,4 +36,7 @@ __all__ = [
     "JobRegistry",
     "Studio2Error",
     "Studio2Service",
+    "WEBDRIVE_ENV_VAR",
+    "sync_service_root",
+    "webdrive_dir",
 ]
