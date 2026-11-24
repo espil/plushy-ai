@@ -132,6 +132,31 @@ root are not.
   Phase 1-5 libraries, rendered with `textContent`.
 - No secrets or tokens anywhere in the Phase 6 files.
 
+## Web-drive output saving (added 2026-11-24, Han's directive)
+
+From 2.0 on, outputs are saved to a web drive, not only to the
+local disk. `studio2/webdrive.py` mirrors output trees into the
+folder named by `PLUSHY_WEBDRIVE_DIR` - point it at the
+desktop-sync folder of a web drive (Google Drive, OneDrive, ...)
+and the drive client uploads from there. No cloud credentials
+are stored and no network code runs in this repo.
+
+- The mirror is incremental (size + mtime), idempotent, and
+  writes `webdrive_manifest.json` into the target root.
+- `Studio2Service.sync_to_webdrive()` mirrors the whole 2.0 data
+  root; every export also syncs best-effort and carries the
+  report in its result under `webdrive`. A drive failure never
+  fails an export.
+- `python3 -m studio2.webdrive` mirrors the default trees (2.0
+  data root + 1.0 `outputs/`) for batch/runner use and prints a
+  JSON report.
+- With `PLUSHY_WEBDRIVE_DIR` unset, saving is disabled and every
+  entry point reports `{"status": "disabled"}` honestly.
+- Covered by `tests/test_webdrive.py`; the full suite passes
+  under `PLUSHY_MOCK=1` (113 tests). The mirror mechanism is
+  verified; an end-to-end upload by a real drive client is the
+  PC-side check that remains.
+
 ## Verified vs unverified
 
 Verified in the development VM (no GPU, no FastAPI):
