@@ -11,6 +11,10 @@ are imported - never modified, never duplicated:
                                                 baseline comparison)
   - Phase 4 `fitting.fit_layers`               (paper-doll compose)
   - Phase 5 `exporter.export_assets`           (PNG / sheet / ASE)
+  - `pipeline_3d.Model3DPipeline`              (image -> textured
+                                                GLB; "sf3d" fast
+                                                backend, "hunyuan"
+                                                quality backend)
 
 This module imports NO web framework, so the whole 2.0 workflow is
 testable (and usable) without FastAPI installed. The thin HTTP
@@ -192,7 +196,7 @@ class Studio2Service:
     def __init__(self, root_dir):
         self.root = Path(root_dir)
         for sub in ("references", "masks", "generated", "compares",
-                    "fits", "exports", "assets"):
+                    "fits", "exports", "assets", "models3d"):
             (self.root / sub).mkdir(parents=True, exist_ok=True)
         self.jobs = JobRegistry()
         self._references: dict[str, dict] = {}   # id -> {record, path}
@@ -212,6 +216,7 @@ class Studio2Service:
             "categories": list(CATEGORIES),
             "profiles": list_profiles(),
             "inpainting": inpainting_status(),
+            "model3d": self.model3d_health(),
             "layer_slots": ["hair_back", "bottoms", "tops", "shoes",
                             "face", "hair_front"],
         }
@@ -503,6 +508,141 @@ class Studio2Service:
         """Create + run a generation job synchronously (tests, CLI)."""
         view = self.create_generation_job(params)
         return self.run_generation_job(view["job_id"])
+
+    # -- 3D: image -> GLB jobs (pipeline_3d delegation) ------------------
+    #
+    # The 3D counterpart of the generation jobs above, delegating to
+    # pipeline_3d exactly the way generation delegates to Phase 3:
+    # the service validates and queues, the library does the work,
+    # and the backend label travels with the job. Two backends:
+    # "sf3d" (fast, the default) and "hunyuan" (quality - Hunyuan3D-
+    # 2mini shape + 2.0 paint, minutes per model). Under PLUSHY_MOCK
+    # the job's backend label is "mock" and the output is the
+    # library's stamped *_MOCK.glb, never presented as real.
+
+    _MODEL3D_BACKEND_ALIASES = {"fast": "sf3d", "quality": "hunyuan",
+                                "sf3d": "sf3d", "hunyuan": "hunyuan"}
+
+    def model3d_health(self) -> dict:
+        """3D backend facts (bootstrap; mirrors the 1.0 health shape,
+        extended with the selected backend)."""
+        import pipeline_3d
+
+        info = {"mock": pipeline_3d.MOCK,
+                "backends": list(pipeline_3d.BACKENDS_3D),
+                "backend": None, "engine": None, "model": None,
+                "installed": False}
+        try:
+            backend = pipeline_3d.selected_backend()
+        except ValueError as e:
+            info["error"] = str(e)
+            return info
+        info["backend"] = backend
+        info["engine"] = pipeline_3d.backend_engine_label(backend)
+        if backend == pipeline_3d.BACKEND_QUALITY:
+            info["model"] = pipeline_3d.HUNYUAN_SHAPE_MODEL
+            info["paint_model"] = pipeline_3d.HUNYUAN_PAINT_MODEL
+            info["installed"] = pipeline_3d.hunyuan_engine_installed()
+        else:
+            info["model"] = pipeline_3d.SF3D_MODEL
+            info["installed"] = pipeline_3d.engine_installed()
+        return info
+
+    def _model3d_backend(self, params: dict) -> str:
+        import pipeline_3d
+
+        raw = params.get("backend")
+        if raw is None:
+            return pipeline_3d.selected_backend()
+        backend = self._MODEL3D_BACKEND_ALIASES.get(
+            str(raw).strip().lower())
+        if backend is None:
+            raise Studio2Error(
+                f"unknown model3d backend {raw!r}; expected one of "
+                + ", ".join(sorted(self._MODEL3D_BACKEND_ALIASES)))
+        return backend
+
+    def create_model3d_job(self, params: dict) -> dict:
+        """Validate an image->GLB request and queue a job for it.
+
+        params: source (service-relative path of an image already
+        under the data root, e.g. an ingested reference), backend
+        ("fast"/"sf3d" or "quality"/"hunyuan"; default = the
+        configured pipeline backend), tri_budget, texture_resolution.
+        """
+        import pipeline_3d
+
+        params = dict(params or {})
+        source = params.get("source")
+        if not source:
+            raise Studio2Error(
+                "model3d job needs a 'source' image (a "
+                "service-relative path under the studio data root)")
+        path = self.resolve_file(str(source))
+        if path.suffix.lower() not in (".png", ".jpg", ".jpeg",
+                                       ".webp"):
+            raise Studio2Error(
+                f"model3d source must be an image, got "
+                f"{path.suffix!r}")
+        backend = self._model3d_backend(params)
+        params["backend"] = backend
+        params["source"] = str(source)
+        label = ("mock" if pipeline_3d.MOCK
+                 else pipeline_3d.backend_engine_label(backend))
+        job = self.jobs.create("model3d", params, backend=label)
+        return self.jobs.status_view(job)
+
+    def run_model3d_job(self, job_id: str) -> dict:
+        """Execute a queued model3d job (processing -> terminal).
+
+        Runs pipeline_3d into models3d/<job_id>.glb; the result is
+        the pipeline's own stats record (engine, backend, mock flag,
+        triangle count) plus service-relative output paths, so the
+        labelling the library stamped is what the job reports.
+        """
+        from pipeline_3d import Model3DOptions, Model3DPipeline
+
+        job = self.jobs.get(job_id)
+        if job["status"] == "cancelled":
+            return self.jobs.status_view(job)
+        if job["status"] != "queued":
+            raise Studio2Error(
+                f"job {job_id} cannot run in status {job['status']!r}")
+        params = job["params"]
+        self.jobs.transition(job, "processing",
+                             message="converting image to 3D",
+                             progress=0.1)
+        try:
+            pipe = Model3DPipeline(backend=params["backend"])
+            source_path = self.resolve_file(params["source"])
+            dest = self.root / "models3d" / f"{job_id}.glb"
+            actual, stats = pipe.image_to_glb(
+                source_path, dest,
+                Model3DOptions(
+                    tri_budget=int(params.get("tri_budget", 8000)),
+                    texture_resolution=int(
+                        params.get("texture_resolution", 1024))))
+        except (RuntimeError, ValueError, FileNotFoundError) as e:
+            self.jobs.transition(job, "failed", message="failed",
+                                 error=str(e))
+            return self.jobs.status_view(job)
+        result = dict(stats)
+        outputs = [self._rel(actual)]
+        twin = stats.get("uncompressed_twin")
+        if twin:
+            outputs.append(self._rel(Path(actual).parent / twin))
+        result["output_files"] = outputs
+        result["sidecar_file"] = self._rel(
+            Path(str(actual) + ".json"))
+        self.jobs.transition(job, "completed", message="done",
+                             result=result)
+        return self.jobs.status_view(job)
+
+    def submit_model3d(self, params: dict) -> dict:
+        """Create + run a model3d job synchronously (tests, CLI,
+        batch tools)."""
+        view = self.create_model3d_job(params)
+        return self.run_model3d_job(view["job_id"])
 
     def get_job(self, job_id: str) -> dict:
         return self.jobs.status_view(self.jobs.get(job_id))
