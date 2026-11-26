@@ -150,3 +150,40 @@ buildings_3d_manifest.json) to GLBs in outputs/models3d/. It is
 resumable - finished buildings are skipped - and `--only <asset>`
 produces a single building. b09 chief hall is flagged landmark
 (20000 tris); the rest use the 8000 budget.
+
+## Quality mode (Hunyuan3D) - added 2026-11-26
+
+The 3D pipeline has a second, switchable backend for quality over
+speed. SF3D stays the default ("fast"); set `PLUSHY_3D_BACKEND=
+hunyuan` (or pass backend "quality"/"hunyuan" to a Studio 2.0
+model3d job) to use the quality backend:
+
+• Shape: tencent/Hunyuan3D-2mini (0.6B distilled DiT, fp16 weights)
+• Texture: tencent/Hunyuan3D-2 paint (hunyuan3d-paint-v2-0), a real
+  multiview bake at render resolution 512, texture 1024
+• Octree resolution 256, 30 shape steps; the building spec
+  (triangle budget + gltfpack) is applied afterwards, same as SF3D
+
+Why not the full Hunyuan3D-2.1: this PC has 8 GB VRAM and 16 GB
+system RAM. The 2.1 shape weights alone nearly fill 8 GB before
+activations and its paint stack cannot share the envelope - it does
+not fit honestly. The 2mini configuration runs both stages with
+diffusers model CPU offload (modules stream through the GPU, the
+rest waits in RAM). Expect minutes per model instead of SF3D's
+seconds, geometry detail above SF3D, and texture/detail still below
+the full 2.1 stack. Neither model repo is gated, so no HF_TOKEN is
+needed for the quality weights.
+
+One-time setup: rebuild the image (the Dockerfile gained the
+/opt/hunyuan-venv engine), then either run `run-quality-sample.bat`
+(it prefetches and verifies the weights itself) or prefetch alone
+inside the container: `python tools/prefetch_quality_3d.py`.
+Downloads are subfolder-scoped (~a few GB, not the 62 GB full
+Hunyuan3D-2 repo) and afterwards conversions run fully offline.
+
+Verify: `run-quality-sample.bat` - one unattended run (environment
+report, mock selftest, image build if the engine is missing, weight
+prefetch, then REAL conversions of three bundled building images
+through the 2.0 service). Send back `quality-sample-log.txt`; it
+ends with QUALITY_SAMPLE_DONE ok=True only if all three outputs are
+real textured meshes honestly labelled engine=hunyuan3d.
