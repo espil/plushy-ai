@@ -2,10 +2,15 @@
 pipeline_3d.py - Plushy AI image-to-3D pipeline (rebuilt 2026-10-25).
 
 Single image -> textured GLB, fully local on the Studio PC's GPU.
-Backend: Stable Fast 3D (SF3D, stabilityai/stable-fast-3d), running in
-its own virtualenv inside the Docker image (/opt/sf3d-venv, code pinned
-at /opt/stable-fast-3d) and invoked as a subprocess, so its dependency
-pins can never disturb the sprite pipeline's environment.
+Default backend: Stable Fast 3D (SF3D, stabilityai/stable-fast-3d),
+running in its own virtualenv inside the Docker image
+(/opt/sf3d-venv, code pinned at /opt/stable-fast-3d) and invoked as a
+subprocess, so its dependency pins can never disturb the sprite
+pipeline's environment. Quality backend (PLUSHY_3D_BACKEND=hunyuan):
+Hunyuan3D-2mini shape + Hunyuan3D-2.0 paint, likewise isolated in
+/opt/hunyuan-venv and invoked through tools/hunyuan_driver.py - see
+the backend-selection block below for the pinned configuration and
+the 8 GB VRAM / 16 GB RAM reasoning.
 
 Why the rules below exist (Han, 2026-10-25): the first 3D path only ever
 ran in mock mode and handed back a gray sphere placeholder; the real
@@ -48,6 +53,72 @@ MOCK = os.getenv("PLUSHY_MOCK", "0") == "1"
 SF3D_PYTHON = Path(os.getenv("PLUSHY_SF3D_PYTHON", "/opt/sf3d-venv/bin/python"))
 SF3D_HOME = Path(os.getenv("PLUSHY_SF3D_HOME", "/opt/stable-fast-3d"))
 SF3D_MODEL = os.getenv("PLUSHY_3D_MODEL", "stabilityai/stable-fast-3d")
+
+# ---------------------------------------------------------------------------
+# Backend selection (quality mode, added 2026-11-26).
+#
+# Two real engines sit behind Model3DPipeline:
+#   "sf3d"    - the FAST backend (Stable Fast 3D). Default; behaviour
+#               unchanged since 2026-10-25.
+#   "hunyuan" - the QUALITY backend (Hunyuan3D), selected with
+#               PLUSHY_3D_BACKEND=hunyuan or Model3DPipeline(
+#               backend="hunyuan"). Slower by minutes, better geometry
+#               and a real baked PBR texture.
+#
+# Why Hunyuan3D-2mini and not the full Hunyuan3D-2.1: the target PC
+# (Han's, RTX 4060) has 8 GB VRAM and 16 GB system RAM. The 2.1 shape
+# model is a multi-billion-parameter DiT whose fp16 weights alone
+# nearly fill 8 GB before activations, and its paint stack cannot
+# share that envelope - it does not fit honestly. The pinned quality
+# configuration is therefore:
+#   shape: tencent/Hunyuan3D-2mini (0.6B distilled DiT, fp16 weights
+#          as shipped - hy3dgen has no supported fp8/quantized load
+#          path, so the sizing lever is offload, not quantization)
+#   paint: tencent/Hunyuan3D-2 subfolder hunyuan3d-paint-v2-0
+#   both stages run with diffusers model CPU offload (modules stream
+#   through the GPU; the rest waits in system RAM), octree 256,
+#   30 shape steps, paint render resolution 512, texture 1024.
+# Trade-off, stated plainly: geometry detail sits above SF3D and the
+# texture is a real multiview bake, but fine detail and texture
+# resolution stay below the full 2.1 stack (and below Meshy).
+# ---------------------------------------------------------------------------
+
+BACKEND_FAST = "sf3d"
+BACKEND_QUALITY = "hunyuan"
+BACKENDS_3D = (BACKEND_FAST, BACKEND_QUALITY)
+
+HUNYUAN_PYTHON = Path(os.getenv("PLUSHY_HUNYUAN_PYTHON", "/opt/hunyuan-venv/bin/python"))
+HUNYUAN_HOME = Path(os.getenv("PLUSHY_HUNYUAN_HOME", "/opt/Hunyuan3D-2"))
+HUNYUAN_DRIVER = Path(os.getenv("PLUSHY_HUNYUAN_DRIVER", "/app/tools/hunyuan_driver.py"))
+HUNYUAN_SHAPE_MODEL = os.getenv("PLUSHY_HUNYUAN_SHAPE_MODEL", "tencent/Hunyuan3D-2mini")
+HUNYUAN_PAINT_MODEL = os.getenv("PLUSHY_HUNYUAN_PAINT_MODEL", "tencent/Hunyuan3D-2")
+HUNYUAN_OCTREE_RESOLUTION = int(os.getenv("PLUSHY_HUNYUAN_OCTREE", "256"))
+HUNYUAN_SHAPE_STEPS = int(os.getenv("PLUSHY_HUNYUAN_STEPS", "30"))
+HUNYUAN_RENDER_RESOLUTION = int(os.getenv("PLUSHY_HUNYUAN_RENDER_RES", "512"))
+
+
+def selected_backend() -> str:
+    """The configured 3D backend ("sf3d" unless PLUSHY_3D_BACKEND
+    says otherwise). Read live from the environment so tests and
+    launchers can switch without re-importing this module."""
+    backend = os.getenv("PLUSHY_3D_BACKEND", BACKEND_FAST).strip().lower()
+    if backend not in BACKENDS_3D:
+        raise ValueError(
+            f"PLUSHY_3D_BACKEND must be one of {BACKENDS_3D}, "
+            f"got {backend!r}")
+    return backend
+
+
+def backend_engine_label(backend: str) -> str:
+    """Short engine name recorded on jobs/health for a backend."""
+    return {BACKEND_FAST: "sf3d",
+            BACKEND_QUALITY: "hunyuan3d-2mini"}[backend]
+
+
+def hunyuan_engine_installed() -> bool:
+    return (HUNYUAN_PYTHON.exists()
+            and (HUNYUAN_HOME / "hy3dgen").exists()
+            and HUNYUAN_DRIVER.exists())
 
 ProgressCallback = Callable[[float, str], None]
 
@@ -215,6 +286,73 @@ def ensure_assets_cached(progress: ProgressCallback = lambda p, m: None) -> None
 
 
 # ---------------------------------------------------------------------------
+# Hunyuan asset prefetch: the same discipline as SF3D - download in
+# the open, verify, then run offline. Only the needed subfolders are
+# fetched (the full tencent/Hunyuan3D-2 repo is ~62 GB; the paint
+# subfolder is a small part of it). facebook/dinov2-large is the
+# image encoder named in the DiT config, fetched for the same reason
+# SF3D fetches it. The delight pipeline is NOT used (the inputs here
+# are clean renders, and its weights do not fit the 8 GB envelope
+# alongside paint).
+# ---------------------------------------------------------------------------
+
+HUNYUAN_PREFETCH = [
+    (HUNYUAN_SHAPE_MODEL,
+     ["config.json", "hunyuan3d-dit-v2-mini/*", "hunyuan3d-vae-v2-mini/*"]),
+    (HUNYUAN_PAINT_MODEL,
+     ["hunyuan3d-paint-v2-0/*"]),
+    ("facebook/dinov2-large", None),
+]
+
+_HUNYUAN_KEY_FILES = {
+    HUNYUAN_SHAPE_MODEL: "hunyuan3d-dit-v2-mini/model.fp16.safetensors",
+    HUNYUAN_PAINT_MODEL: "hunyuan3d-paint-v2-0/model_index.json",
+}
+
+
+def hunyuan_cache_complete() -> bool:
+    for repo, _patterns in HUNYUAN_PREFETCH:
+        if not repo_cache_complete(repo):
+            return False
+        key = _HUNYUAN_KEY_FILES.get(repo)
+        if key:
+            folder = _hub_dir() / ("models--" + repo.replace("/", "--"))
+            if not list(folder.glob(f"snapshots/*/{key}")):
+                return False
+    return True
+
+
+def ensure_hunyuan_assets_cached(progress: ProgressCallback = lambda p, m: None) -> None:
+    """Download + verify every asset the quality backend needs, with
+    visible progress. Raises RuntimeError naming whatever could not
+    be cached."""
+    from huggingface_hub import snapshot_download
+
+    for repo, patterns in HUNYUAN_PREFETCH:
+        folder = _hub_dir() / ("models--" + repo.replace("/", "--"))
+        key = _HUNYUAN_KEY_FILES.get(repo)
+        key_ok = (not key) or bool(list(folder.glob(f"snapshots/*/{key}")))
+        if repo_cache_complete(repo) and key_ok:
+            st = _repo_cache_state(repo)
+            progress(0.04, f"model cache verified: {repo} "
+                           f"({st['bytes'] / 1e6:.0f} MB, complete)")
+            continue
+        progress(0.04, f"downloading model: {repo} (visible, one-time)")
+        snapshot_download(repo_id=repo, allow_patterns=patterns)
+        if not repo_cache_complete(repo):
+            st = _repo_cache_state(repo)
+            raise RuntimeError(
+                f"model cache still incomplete for {repo}: {st}. "
+                "Check the network connection to Hugging Face and retry.")
+        if key and not list(folder.glob(f"snapshots/*/{key}")):
+            raise RuntimeError(
+                f"model cache for {repo} is missing its key file {key}; "
+                "delete the cache folder for this repo and retry.")
+        st = _repo_cache_state(repo)
+        progress(0.06, f"model cached: {repo} ({st['bytes'] / 1e6:.0f} MB)")
+
+
+# ---------------------------------------------------------------------------
 # GLB inspection (pure python: header + JSON chunk only)
 # ---------------------------------------------------------------------------
 
@@ -341,8 +479,13 @@ def _write_mock_sphere(dest: Path) -> Path:
 # ---------------------------------------------------------------------------
 
 class Model3DPipeline:
-    def __init__(self):
+    def __init__(self, backend: str | None = None):
         self.mock = MOCK
+        self.backend = backend if backend is not None else selected_backend()
+        if self.backend not in BACKENDS_3D:
+            raise ValueError(
+                f"unknown 3D backend {self.backend!r}; "
+                f"expected one of {BACKENDS_3D}")
 
     def image_to_glb(self, image_path, dest: Path, options: Optional[Model3DOptions] = None,
                      progress: Optional[ProgressCallback] = None) -> tuple[Path, dict]:
@@ -368,12 +511,21 @@ class Model3DPipeline:
         if self.mock:
             progress(0.5, "MOCK mode: writing stamped placeholder (NOT a real model)")
             actual = _write_mock_sphere(dest)
-            stats = {"mock": True, "engine": "mock", **glb_stats(actual)}
+            stats = {"mock": True, "engine": "mock",
+                     "backend": self.backend, **glb_stats(actual)}
             _write_sidecar(actual, stats)
             progress(1.0, "MOCK placeholder done")
             return actual, stats
 
-        if not engine_installed():
+        if self.backend == BACKEND_QUALITY:
+            if not hunyuan_engine_installed():
+                raise RuntimeError(
+                    "Hunyuan3D quality engine is not installed in this "
+                    f"image (python={HUNYUAN_PYTHON}, home={HUNYUAN_HOME}, "
+                    f"driver={HUNYUAN_DRIVER}). Rebuild the Docker image "
+                    "with the current Dockerfile, then start the Studio "
+                    "again. No placeholder was produced.")
+        elif not engine_installed():
             raise RuntimeError(
                 "SF3D engine is not installed in this image "
                 f"(python={SF3D_PYTHON}, home={SF3D_HOME}). "
@@ -383,31 +535,17 @@ class Model3DPipeline:
         tex = options.texture_resolution
         if tex not in (512, 1024, 2048):
             tex = 1024
-        remesh = options.remesh if options.remesh in ("none", "triangle", "quad") else "none"
 
         tmp = Path(tempfile.mkdtemp(prefix="plushy3d_"))
         try:
-            ensure_assets_cached(progress)
-            progress(0.1, "SF3D reconstruction starting (assets cached, offline run)")
-            cmd = [
-                str(SF3D_PYTHON), str(SF3D_HOME / "run.py"), str(image_path),
-                "--output-dir", str(tmp),
-                "--texture-resolution", str(tex),
-                "--remesh_option", remesh,
-                "--foreground-ratio", str(options.foreground_ratio),
-                "--pretrained-model", SF3D_MODEL,
-            ]
-            returncode, tail = _run_streaming(cmd, cwd=str(SF3D_HOME),
-                                              env=_sf3d_env(offline=True),
-                                              timeout=1800, tag="sf3d")
-            if returncode != 0:
-                raise RuntimeError(f"SF3D failed (exit {returncode}): {tail[-1500:]}")
-            produced = tmp / "0" / "mesh.glb"
-            if not produced.exists():
-                found = sorted(tmp.rglob("*.glb"))
-                if not found:
-                    raise RuntimeError("SF3D finished but produced no GLB file")
-                produced = found[0]
+            if self.backend == BACKEND_QUALITY:
+                ensure_hunyuan_assets_cached(progress)
+                produced = self._run_hunyuan(image_path, tmp, options,
+                                             tex, progress)
+            else:
+                ensure_assets_cached(progress)
+                produced = self._run_sf3d(image_path, tmp, options,
+                                          tex, progress)
             progress(0.8, "validating model (real-mesh gate)")
             validate_glb(produced)
             progress(0.88, "low-poly + gltfpack pass (building spec)")
@@ -417,9 +555,23 @@ class Model3DPipeline:
                 raise ValueError(
                     f"post-processed GLB still over the triangle budget: "
                     f"{stats['triangles']} > {options.tri_budget}")
-            stats.update({"mock": False, "engine": "sf3d", "model": SF3D_MODEL,
-                          "texture_resolution": tex,
-                          "tri_budget": options.tri_budget, "gltfpack": True})
+            if self.backend == BACKEND_QUALITY:
+                stats.update({
+                    "mock": False, "engine": "hunyuan3d",
+                    "backend": BACKEND_QUALITY,
+                    "model": HUNYUAN_SHAPE_MODEL,
+                    "paint_model": HUNYUAN_PAINT_MODEL,
+                    "octree_resolution": HUNYUAN_OCTREE_RESOLUTION,
+                    "shape_steps": HUNYUAN_SHAPE_STEPS,
+                    "render_resolution": HUNYUAN_RENDER_RESOLUTION,
+                    "texture_size": tex,
+                    "tri_budget": options.tri_budget, "gltfpack": True})
+            else:
+                stats.update({"mock": False, "engine": "sf3d",
+                              "backend": BACKEND_FAST, "model": SF3D_MODEL,
+                              "texture_resolution": tex,
+                              "tri_budget": options.tri_budget,
+                              "gltfpack": True})
             shutil.copyfile(final, dest)
             # Unity-safe twin: the same model WITHOUT meshopt compression.
             # Loaders without a meshopt decoder (Unity glTFast etc.) cannot
@@ -445,6 +597,69 @@ class Model3DPipeline:
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
 
+
+    def _run_sf3d(self, image_path: Path, tmp: Path,
+                  options: Model3DOptions, tex: int,
+                  progress: ProgressCallback) -> Path:
+        """FAST backend: run SF3D in its venv, return the raw GLB."""
+        remesh = options.remesh if options.remesh in (
+            "none", "triangle", "quad") else "none"
+        progress(0.1, "SF3D reconstruction starting (assets cached, offline run)")
+        cmd = [
+            str(SF3D_PYTHON), str(SF3D_HOME / "run.py"), str(image_path),
+            "--output-dir", str(tmp),
+            "--texture-resolution", str(tex),
+            "--remesh_option", remesh,
+            "--foreground-ratio", str(options.foreground_ratio),
+            "--pretrained-model", SF3D_MODEL,
+        ]
+        returncode, tail = _run_streaming(cmd, cwd=str(SF3D_HOME),
+                                          env=_sf3d_env(offline=True),
+                                          timeout=1800, tag="sf3d")
+        if returncode != 0:
+            raise RuntimeError(f"SF3D failed (exit {returncode}): {tail[-1500:]}")
+        produced = tmp / "0" / "mesh.glb"
+        if not produced.exists():
+            found = sorted(tmp.rglob("*.glb"))
+            if not found:
+                raise RuntimeError("SF3D finished but produced no GLB file")
+            produced = found[0]
+        return produced
+
+    def _run_hunyuan(self, image_path: Path, tmp: Path,
+                     options: Model3DOptions, tex: int,
+                     progress: ProgressCallback) -> Path:
+        """QUALITY backend: run the Hunyuan driver in its venv and
+        return the raw textured GLB. The driver (tools/hunyuan_driver.py)
+        loads the 2mini shape pipeline and the 2.0 paint pipeline with
+        model CPU offload - the only arrangement that fits the target
+        PC's 8 GB VRAM / 16 GB RAM - so one model takes minutes, and
+        the streamed log lines keep that visible instead of silent."""
+        progress(0.1, "Hunyuan3D quality reconstruction starting "
+                      "(assets cached, offline run; minutes, not seconds)")
+        produced = tmp / "hunyuan_textured.glb"
+        cmd = [
+            str(HUNYUAN_PYTHON), str(HUNYUAN_DRIVER),
+            "--image", str(image_path),
+            "--out", str(produced),
+            "--shape-model", HUNYUAN_SHAPE_MODEL,
+            "--paint-model", HUNYUAN_PAINT_MODEL,
+            "--octree-resolution", str(HUNYUAN_OCTREE_RESOLUTION),
+            "--steps", str(HUNYUAN_SHAPE_STEPS),
+            "--render-resolution", str(HUNYUAN_RENDER_RESOLUTION),
+            "--texture-size", str(tex),
+        ]
+        env = dict(os.environ, PYTHONUNBUFFERED="1", HF_HUB_OFFLINE="1",
+                   PYTHONPATH=str(HUNYUAN_HOME))
+        returncode, tail = _run_streaming(cmd, cwd=str(HUNYUAN_HOME),
+                                          env=env, timeout=3600,
+                                          tag="hunyuan")
+        if returncode != 0:
+            raise RuntimeError(
+                f"Hunyuan3D failed (exit {returncode}): {tail[-1500:]}")
+        if not produced.exists():
+            raise RuntimeError("Hunyuan3D finished but produced no GLB file")
+        return produced
 
     def _postprocess(self, produced: Path, tmp: Path, options: Model3DOptions) -> Path:
         """Enforce the building spec: decimate to the triangle budget with
