@@ -85,6 +85,40 @@ RUN --mount=type=cache,target=/root/.cache/pip \
  && /opt/sf3d-venv/bin/pip install --retries 10 --timeout 120 "https://aiinfra.pkgs.visualstudio.com/2692857e-05ef-43b4-ba9c-ccf1c22c437c/_packaging/9387c3aa-d9ad-4513-968c-383f6f7f53b8/pypi/download/onnxruntime-gpu/1.18.1/onnxruntime_gpu-1.18.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl#sha256=4e9a52f5d43a84fe29e135da6bf10daa18836c81bed9060a5924efd6afc0d259" \
  && USE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/sf3d-venv/bin/pip install --no-build-isolation --retries 10 --timeout 120 ./texture_baker ./uv_unwrapper
 
+# --- Hunyuan3D QUALITY engine (isolated venv, added 2026-11-26) ---
+# The quality backend behind PLUSHY_3D_BACKEND=hunyuan: Hunyuan3D-
+# 2mini shape + Hunyuan3D-2.0 paint (hy3dgen), driven by
+# tools/hunyuan_driver.py. Same isolation discipline as SF3D: its own
+# venv (/opt/hunyuan-venv), its own code tree (/opt/Hunyuan3D-2), so
+# its pins can never disturb the sprite or SF3D environments.
+# The code pin is a DATE pin (last commit before 2025-10-20, the era
+# of the pinned model snapshots - the HF model repos were last
+# modified 2025-10-17): the exact upstream HEAD hash could not be
+# re-verified from the author's environment, and a floating clone
+# would not be reproducible.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m venv /opt/hunyuan-venv \
+ && /opt/hunyuan-venv/bin/pip install --retries 10 --timeout 120 --upgrade pip "setuptools==69.5.1" wheel ninja \
+ && /opt/hunyuan-venv/bin/pip install --resume-retries 20 --retries 10 --timeout 120 \
+      torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu121
+
+RUN git clone https://github.com/Tencent-Hunyuan/Hunyuan3D-2.git /opt/Hunyuan3D-2 \
+ && cd /opt/Hunyuan3D-2 \
+ && git checkout $(git rev-list -1 --before="2025-10-20T00:00:00Z" HEAD)
+
+# requirements.txt also lists the demo stack (gradio/fastapi) - it
+# lands only in this isolated venv, so it is installed as shipped.
+# Its onnxruntime is the CPU build: hy3dgen uses rembg only as a
+# light preprocessing step, unlike SF3D's GPU rembg path.
+# The texgen custom_rasterizer is a compiled CUDA extension, built
+# as its own step (same failure-naming discipline as SF3D's).
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd /opt/Hunyuan3D-2 \
+ && /opt/hunyuan-venv/bin/pip install --retries 10 --timeout 120 -r requirements.txt
+
+RUN cd /opt/Hunyuan3D-2/hy3dgen/texgen/custom_rasterizer \
+ && TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/hunyuan-venv/bin/python setup.py install
+
 # --- app code ---
 # (The run commands mount the repo over /app, so git pull alone updates code.
 #  These COPYs are fallback for running without the mount.)
