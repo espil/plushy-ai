@@ -112,9 +112,28 @@ RUN git clone https://github.com/Tencent-Hunyuan/Hunyuan3D-2.git /opt/Hunyuan3D-
 # light preprocessing step, unlike SF3D's GPU rembg path.
 # The texgen custom_rasterizer is a compiled CUDA extension, built
 # as its own step (same failure-naming discipline as SF3D's).
+#
+# ERA PINS (added 2026-11-26 after Han's first quality run failed):
+# upstream requirements.txt pins NOTHING, so a 2026 build resolved
+# diffusers 0.41.0 + transformers 5.20.2 against the torch==2.4.1
+# pinned above - diffusers 0.41 calls torch.accelerator (torch
+# >= 2.6) and every conversion died at import with
+# "AttributeError: module 'torch' has no attribute 'accelerator'".
+# The four pins below are the stack Hunyuan3D-2 shipped against;
+# they are resolved in the SAME pip run as requirements.txt so the
+# resolver picks a compatible demo stack around them instead of a
+# post-install downgrade fighting it.
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd /opt/Hunyuan3D-2 \
- && /opt/hunyuan-venv/bin/pip install --retries 10 --timeout 120 -r requirements.txt
+ && /opt/hunyuan-venv/bin/pip install --retries 10 --timeout 120 -r requirements.txt \
+      "diffusers==0.31.0" "transformers==4.46.3" \
+      "huggingface-hub==0.26.2" "tokenizers==0.20.3"
+
+# Engine revision stamp: run_quality_sample.py rebuilds the image
+# whenever the stamp inside it differs from the runner's ENGINE_REV,
+# so a Dockerfile engine fix can never be silently skipped by an
+# already-built image. Bump both together.
+RUN echo "2" > /opt/hunyuan-venv/PLUSHY_ENGINE_REV
 
 RUN cd /opt/Hunyuan3D-2/hy3dgen/texgen/custom_rasterizer \
  && TORCH_CUDA_ARCH_LIST="8.6;8.9" /opt/hunyuan-venv/bin/python setup.py install
