@@ -175,11 +175,35 @@ def docker_ok() -> bool:
     return shutil.which("docker") is not None
 
 
+# The Docker image carries this stamp at
+# /opt/hunyuan-venv/PLUSHY_ENGINE_REV (written by the Dockerfile).
+# Bump it together with the Dockerfile whenever the engine layer
+# changes: an image whose stamp differs is rebuilt, so an engine
+# fix can never be silently skipped by an already-built image
+# (the first quality run's torch/diffusers fix would have been).
+ENGINE_REV = "2"
+
+
 def engine_present() -> bool:
     rc = run_streamed(
         ["docker", "run", "--rm", DOCKER_IMAGE, "/usr/bin/test",
          "-x", "/opt/hunyuan-venv/bin/python"], timeout=300)
-    return rc == 0
+    if rc != 0:
+        return False
+    try:
+        out = subprocess.run(
+            ["docker", "run", "--rm", DOCKER_IMAGE, "cat",
+             "/opt/hunyuan-venv/PLUSHY_ENGINE_REV"],
+            capture_output=True, text=True, timeout=300)
+    except Exception:
+        return False
+    stamp = (out.stdout or "").strip()
+    if stamp != ENGINE_REV:
+        log(f"engine revision mismatch: image has {stamp!r}, "
+            f"this runner needs {ENGINE_REV!r} - the image will "
+            f"be rebuilt so the current engine fixes apply")
+        return False
+    return True
 
 
 def main() -> int:
@@ -224,10 +248,10 @@ def main() -> int:
         else:
             step("STEP 2 - engine + weights (docker)")
             if not engine_present():
-                log("Hunyuan engine venv missing from the image - "
-                    "building the Docker image now (one-time, long; "
-                    "the Dockerfile changed when quality mode was "
-                    "added)")
+                log("Hunyuan engine missing or outdated in the "
+                    "image - building the Docker image now (long; "
+                    "the pip cache makes rebuilds after the first "
+                    "one much shorter)")
                 rc = run_streamed(
                     ["docker", "build", "-t", DOCKER_IMAGE, "."],
                     timeout=7200)
